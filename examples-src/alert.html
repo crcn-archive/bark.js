@@ -36,7 +36,9 @@ title: Growl Notifications
 
 		for(var i = 10; i--;)
 		Bark.alert("hello world!" + i, function(event) {
-			console.log(event);
+			if(event.ok) {
+				console.log("OK!")
+			}
 		});	
 			
 	}
