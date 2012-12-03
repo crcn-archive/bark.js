@@ -1,6 +1,7 @@
 all: script examples
 
 release:
+	closure-compiler --js=bark.js --js_output_file=bark.min.js
 
 script:
 	browserify ./lib/index.js -o ./bark.js; \
