@@ -1,5 +1,7 @@
 all: script examples
 
+release:
+
 script:
 	browserify ./lib/index.js -o ./bark.js; \
 	cp bark.js examples-src/js/bark.js;
