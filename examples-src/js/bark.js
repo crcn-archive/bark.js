@@ -1734,11 +1734,8 @@ module.exports = require("./base").extend({
 	"transitionOut": function(cb) {
 		var self = this;
 		this.$modal.transit({ opacity: 0 }, 500, function() {
-			if(cb) {
-				cb();
-			} else {
-				self.close();
-			}
+			if(cb) cb();
+			self.close();
 		})
 	}
 
@@ -1772,7 +1769,15 @@ require.define("/lib/views/notification.js",function(require,module,exports,__di
 
 
 		this.$el.find(".close").one("click", function() {
-			self.transitionOut();
+
+			//this chunk allows for the detection of a particular button
+			var ev = {},
+			name = $(this).attr("data-name");
+			if(name) ev[name] = true;
+
+			self.transitionOut(function() {
+				self.options.onClose(ev);
+			});
 		});
 
 		if(this.options.closeAfterTime) {
@@ -1809,13 +1814,8 @@ require.define("/lib/views/notification.js",function(require,module,exports,__di
 		$el.
 		css(tout.from).
 		transition(tout.to, tout.easing.duration || 200, tout.easing.type, function() {
-			// $el.transition({ width: 0, height: 0 }, 1000, cb);
-			if(cb) {
-				cb();
-			} else {
-				self.close();
-				self.options.onClose();
-			}
+			if(cb) cb();
+			self.close();
 		});
 	}
 

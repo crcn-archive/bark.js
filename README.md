@@ -47,7 +47,7 @@ Somewhere in your html `<head />`:
 <script type="text/ejs" data-templateName="alert">
 	<div class="alert">
 		<div><%-message %></div>
-		<a href="#" class="alert-ok close"><%-ok %></a>
+		<a href="#" class="alert-ok close" data-name="ok"><%-ok %></a>
 	</div>
 </script>
 

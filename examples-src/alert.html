@@ -36,7 +36,7 @@ title: Growl Notifications
 
 		for(var i = 10; i--;)
 		Bark.alert("hello world!" + i, function(event) {
-			console.log("CLOSE")
+			console.log(event);
 		});	
 			
 	}
@@ -46,7 +46,7 @@ title: Growl Notifications
 <script type="text/ejs" template-name="alert">
 	<div class="alert">
 		<div><%-message %></div>
-		<a href="#" class="alert-ok close"><%-ok %></a>
+		<a href="#" class="alert-ok close" data-name="ok"><%-ok %></a>
 	</div>
 </script>
 
