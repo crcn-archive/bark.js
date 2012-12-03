@@ -1,0 +1,24 @@
+Bark.
+register("notify").
+max(3).
+notificationClass("alert").
+modalClass("alert-modal").
+options({ ok: "Yes!", cancel: "No" }).
+layout({ right: 10, top: 10 }).
+transitionIn({ left: 200, opacity: 0 }, { left: 0, opacity: 1 }).
+transitionOut({ }, { opacity: 0 }).
+closeAfterTime(4000).
+template(templateHtml);
+
+
+var count = 0;
+
+function notify() {
+	if(count++ > 10) return;
+
+	Bark.notify("hello world! " + count);
+
+	setTimeout(notify, 1000);
+};
+
+notify();

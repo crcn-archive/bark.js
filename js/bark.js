@@ -464,17 +464,25 @@ var NotificationBuilder = module.exports = structr({
 	 */
 
 	"__construct": function(inheritFrom) {
-		this.options = structr.copy(inheritFrom ? inheritFrom.options : {});
+		this._options = structr.copy(inheritFrom ? inheritFrom._options : {});
 		this._manager = new NotificationManager(this);
 
-		if(!this.options.max) this.options.max = 1;
+		if(!this._options.max) this._options.max = 1;
 	},
 
 	/**
 	 */
 
 	"defaults": function(options) {
-		this.options = structr.copy(this.options, options);
+		this._options = structr.copy(this._options, options);
+		return this;
+	},
+
+	/**
+	 */
+
+	"options": function(options) {
+		this._options = structr.copy(options, this._options);
 		return this;
 	},
 
@@ -482,7 +490,7 @@ var NotificationBuilder = module.exports = structr({
 	 */
 
 	"reset": function(options) {
-		this.options = options || {};
+		this._options = options || {};
 	},
 
 	/**
@@ -490,16 +498,7 @@ var NotificationBuilder = module.exports = structr({
 	 */
 
 	"closeAfterTime": function(value) {
-		this.options.closeAfterTime = value;
-		return this;
-	},
-
-	/**
-	 * position: left, right, top, bottom
-	 */
-
-	"position": function(options) {
-		this.options.position = options;
+		this._options.closeAfterTime = value;
 		return this;
 	},
 
@@ -508,7 +507,7 @@ var NotificationBuilder = module.exports = structr({
 	 */
 
 	"max": function(value) {
-		this.options.max = value;
+		this._options.max = value;
 		return this;
 	},
 
@@ -517,7 +516,7 @@ var NotificationBuilder = module.exports = structr({
 	 */
 
 	"layout": function(value) {
-		this.options.layout = value;
+		this._options.layout = value;
 		return this;
 	},
 
@@ -526,7 +525,7 @@ var NotificationBuilder = module.exports = structr({
 	 */
 
 	"viewClass": function(viewClass) {
-		this.options.viewClass = viewClass;
+		this._options.viewClass = viewClass;
 	},
 
 
@@ -535,7 +534,7 @@ var NotificationBuilder = module.exports = structr({
 	 */
 
 	"modalClass": function(className) {
-		this.options.modalClass = className;
+		this._options.modalClass = className;
 		return this;
 	},
 
@@ -544,7 +543,7 @@ var NotificationBuilder = module.exports = structr({
 	 */
 
 	"notificationClass": function(className) {
-		this.options.notificationClass = className;
+		this._options.notificationClass = className;
 		return this;
 	},
 
@@ -552,7 +551,7 @@ var NotificationBuilder = module.exports = structr({
 	 */
 
 	"template": function(element) {
-		this.options.template = element;
+		this._options.template = element;
 		return this.viewClass(TemplateView);
 	},
 
@@ -561,7 +560,7 @@ var NotificationBuilder = module.exports = structr({
 	 */
 
 	"transitionIn": function(from, to, easing) {
-		this.options.transitionIn = { from: from || {}, to: to || {}, easing: easing || {} };
+		this._options.transitionIn = { from: from || {}, to: to || {}, easing: easing || {} };
 		return this;
 	},
 
@@ -570,7 +569,7 @@ var NotificationBuilder = module.exports = structr({
 	 */
 
 	"transitionOut": function(from, to, easing) {
-		this.options.transitionOut = { from: from || {}, to: to || {}, easing: easing || {} };
+		this._options.transitionOut = { from: from || {}, to: to || {}, easing: easing || {} };
 		return this;
 	},
 
@@ -1595,7 +1594,7 @@ module.exports = structr({
 		options.onClose = onClose || function(){};
 
 		if(!this._container) {
-			this._container = new Container(this._builder.options);
+			this._container = new Container(this._builder._options);
 			this._container.display();
 			var self = this;
 			this._container.once("close", function() {
@@ -1603,7 +1602,7 @@ module.exports = structr({
 			});
 		}
 
-		return this._container.addNotification(structr.copy(this._builder.options, options, {}));
+		return this._container.addNotification(structr.copy(this._builder._options, options, {}));
 	},
 
 
@@ -1629,10 +1628,9 @@ module.exports = require("./base").extend({
 		this._children = [];
 		this._queue = [];
 
-
-		var tpl = "<div class=\"bark-bark\" style=\"position:fixed;z-index:99999;width:100%;height:100%;top:0px;left:0px;\">" +
-					"<div class=\"bark-modal\" style=\"position:absolute;left:0px;top:0px;width:100%;height:100%\"></div>" + 
-					"<div class=\"bark-container\"></div>" + 
+		var tpl = "<div class=\"bark-bark\" style=\"pointer-events:none;position:fixed;z-index:99999;width:100%;height:100%;top:0px;left:0px;\">" +
+					"<div class=\"bark-modal\" style=\"position:absolute;left:0px;top:0px;pointer-events:auto\"></div>" + 
+					"<div class=\"bark-container\" style=\"pointer-events:auto\"></div>" + 
 				  "</div>";
 
 		options.$el = $(tpl);
@@ -1653,11 +1651,12 @@ module.exports = require("./base").extend({
 	 */
 
 	"display": function() {
-		$(document.body).append(this.$el);
+		$(document.body).prepend(this.$el);
 		this.$container = this.$el.find(".bark-container");
 		this.$modal     = this.$el.find(".bark-modal");
 
 		if(this.options.modalClass) {
+			this.$modal.css({ width: "100%", height: "100%" });
 			this.$modal.addClass(this.options.modalClass);
 		}
 		this.layout();

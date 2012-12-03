@@ -1,0 +1,21 @@
+Bark.
+register("confirm").
+notificationClass("alert").
+modalClass("alert-modal").
+options({ ok: "Yes!", cancel: "No" }).
+layout({ center: true, top: 100 }).
+transitionIn({ rotateX: -90, opacity: 0 }, { rotateX: 0, opacity: 1 }).
+transitionOut({ }, { opacity: 0, scale: 1.25 }).
+template(templateHtml);
+
+Bark.
+register("alert", "confirm").
+options({ cancel: undefined });
+
+Bark.confirm("Do you like Bark.js?", function(ev) {
+  if(ev.ok) {
+    Bark.alert("sweet!");
+  } else {
+    Bark.alert("I guess that's okay...")
+  }
+});

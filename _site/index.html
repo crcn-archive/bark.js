@@ -19,149 +19,9 @@
     <script type="text/javascript" src="js/head.js"></script>
 
     
-<style type="text/css">
-    .editor {
-      height: 400px;
-      clear: both;
-      margin-top: 20px;
-      margin-bottom: 20px;
-    }
-</style>
+<link rel="stylesheet" type="text/css" href="css/bark.css" media="screen" />
 
-<script type="text/css" id="example-style">
-</script>
-
-<script type="text/ace-text" id="js-example">
-
-Bark.
-register("confirm").
-notificationClass("alert").
-defaults({ ok: "Yes!", cancel: "No" }).
-layout({ center: true, top: 100 }).
-transitionIn({ rotateY: -90, opacity: 0 }, { rotateY: 0, opacity: 1 }).
-transitionOut({ }, { opacity: 0, scale: 1.25 }).
-template(templateHtml);
-
-
-Bark.
-register("alert", "confirm").
-extend({ cancel: null }) //remove the cancel button
-// transitionIn({ })
-
-Bark.confirm("Do you like Bark.js?", function(ev) {
-  if(ev.ok) {
-    Bark.alert("sweet!");
-  } else {
-    Bark.alert("OK :(")
-  }
-});
-
-</script>
-
-<script type="text/ace-text" id="css-example">
-.bark-notification {
-  -webkit-perspective: 600px;
-     -moz-perspective: 600px;
-       -o-perspective: 600px;
-          perspective: 600px;
-}
-
-.alert-container {  
-  padding: 20px;
-  color: #FFF;
-  text-align: center;
-  background-color: rgba(0,0,0,0.7);
-  -webkit-border-radius: 5px;
-   -khtml-border-radius: 5px;
-     -moz-border-radius: 5px;
-          border-radius: 5px;
-}
-
-.alert-container > div {
-  color: #FFF;
-  clear: both;
-  font-size: 24px;
-  padding: 5px;
-  margin-bottom: 8px;
-}
-
-.alert-container > a {
-  color: #000;
-  padding: 8px;
-  font-size: 13px;
-  font-weight: bold;
-  background-color: #FFF;
-  -webkit-border-radius: 5px;
-   -khtml-border-radius: 5px;
-     -moz-border-radius: 5px;
-          border-radius: 5px;
-}
-
-
-</script>
-
-
-<script type="text/ace-text" id="ejs-example">
-  <div class="alert-container">
-    <div><%-message %></div>
-
-    <% if(typeof cancel != "undefined") %>
-    <a href="#" class="close" data-name="cancel"><%-cancel %></a>
-
-    <% if(typeof ok != "undefined") %>
-    <a href="#" class="close" data-name="ok"><%-ok %></a>
-
-  </div>
-</script>
-
-<script type="text/javascript">
-  
-  var example = function() {
-    Bark.
-    register("alert");
-  }
-
-  function headReady() {
-
-    var editors = {};
-
-    ["js:javascript", "css", "ejs:html"].forEach(function(tpl) {
-
-      var parts = tpl.split(":"),
-      tpl = parts.shift(),
-      mode = parts.shift() || tpl;
-
-
-      $el = $("#"+tpl+"-editor");
-      $el.text($("#"+tpl+"-example").html());
-
-      $el.css({ width: 650, height: 400, clear: "both" });
-      var editor = editors[tpl] = ace.edit(tpl + "-editor");
-      editor.setTheme("ace/theme/textmate");
-      editor.getSession().setMode("ace/mode/" + mode);
-    }); 
-
-
-    $("#run-code").click(function() {
-
-      $("#css-example").remove();
-      $("<style type='text/css' id='css-example'>" + editors.css.getSession().getValue() + "</style>").appendTo("head");
-
-      // $("#example-style").html(editors.css.getSession().getValue());
-
-      var templateHtml = editors.ejs.getSession().getValue();
-
-      //eval the javascript
-      eval(editors.js.getSession().getValue());
-     
-
-      // console.log(editors.js.getSession().getValue())
-    });
-
-  }
-
-
-</script>
+<script type="text/javascript" src="examples/index.js"></script>
 
 
     <script type="text/javascript">
@@ -169,7 +29,8 @@ Bark.confirm("Do you like Bark.js?", function(ev) {
           "js/underscore.js", 
           "js/transit.js", 
           "js/ace/ace.js", 
-          "js/bark.js", 
+          "js/step.js", 
+          "js/bark.js?" + Date.now(), 
           headReady);
     </script>
 
@@ -196,11 +57,14 @@ Bark.confirm("Do you like Bark.js?", function(ev) {
     <!--section id="main_content">
     </section-->
 
-      <input id="run-code" type="button" value="run this code"></input>
+      <div id="examples-container"></div>
 
+      <div id="run-code-container">
+        <a id="run-code" href="#">Run This Code</a>
+      </div>
       <h1> Bark Script </h1>
       <div class="editor">
-       <div id="js-editor"></div>
+       <div id="javascript-editor"></div>
       </div>
 
       <h1> CSS </h1>
@@ -210,7 +74,7 @@ Bark.confirm("Do you like Bark.js?", function(ev) {
 
       <h1> EJS Template </h1>
       <div class="editor">
-        <div id="ejs-editor"></div>
+        <div id="html-editor"></div>
       </div>
 
 
