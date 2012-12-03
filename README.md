@@ -1,3 +1,8 @@
+### Build Requirements
+
+- jekyll
+- [bpm](http://www.getbpm.org/pages/download) - todo
+
 ### Dependencies
 
 - jQuery

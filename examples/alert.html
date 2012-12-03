@@ -1,0 +1,68 @@
+
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+ 
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<title>Growl Notifications</title>
+	<script type="text/javascript" src="./js/head.js"></script>
+	<script type="text/javascript">
+			head.js("./js/jquery.js", "./js/less.js", "./js/transit.js", "./js/underscore.js", "./js/bark.js");
+	</script>
+
+
+	
+<link rel="stylesheet/less" type="text/css" href="./less/alert.less">
+<script type="text/javascript">
+	head.ready(function() {
+
+		var notification = Bark.
+
+		register("alert").
+
+		//make the alert front and center with a little offset
+		position({ center: { y: -100 } }).
+
+		//fade in & scale in
+		transitionIn({ scale: 0.75, alpha: 0 }, { alpha: 1 }).
+
+		//fade out & scale out
+		transitionOut({ alpha: 1 }, { alpha: 0, scale: 0.75 }).
+
+
+		template($("[template-name='alert']").html());
+
+
+
+
+		
+		Bark.alert("hello world!", function(ok) {
+			if(ok) {
+
+			}
+		});
+
+	});
+</script>
+
+<script type="text/ejs" template-name="alert">
+	<div class="alert">
+		<div><%-alert %></div>
+		<a href="#" class="alert-ok"><%-ok %></a>
+	</div>
+</script>
+
+
+</head>
+<body> 
+	
+
+
+
+
+</body>
+</html>

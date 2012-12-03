@@ -1,0 +1,35 @@
+@import "common.less";
+
+.bark-container {
+	width: 500px;
+	height: 500px;
+	background-color: rgba(0,0,0,0.3);
+}
+
+.alert {
+	min-width: 300px;
+	min-height: 200px;
+	color: #FFF;
+	max-width: 500px;
+	max-height: 500px;
+	font-size: 24px;
+	weight: bold;
+	background-color: rgba(0, 0, 0, 0.7);
+	.rounded(5px);
+	text-align: center;
+	padding: 10px;
+}
+
+.alert > div {
+	clear: both;
+}
+
+
+.alert-button, .alert-ok {
+	padding: 5px;
+	font-size: 15px;
+	color: #000;
+	text-decoration: none;
+	background-color: #FFF;
+	.rounded(5px);
+}

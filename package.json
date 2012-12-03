@@ -1,0 +1,19 @@
+{
+  "name": "back-notifications",
+  "version": "0.0.0",
+  "description": "- jQuery - [transit](http://ricostacruz.com/jquery.transit/)",
+  "main": "./lib/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/crcn/bark.js.git"
+  },
+  "author": "",
+  "license": "BSD",
+  "readmeFilename": "README.md",
+  "dependencies": {
+    "stitch": "0.3.x"
+  }
+}
