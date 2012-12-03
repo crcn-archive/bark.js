@@ -1648,6 +1648,7 @@ module.exports = require("./base").extend({
 			this.$modal.addClass(this.options.modalClass);
 		}
 		this.layout();
+		this.transitionIn();
 	},
 
 	/**
@@ -1687,7 +1688,7 @@ module.exports = require("./base").extend({
 		//no more notifications? end.
 		if(!options) {
 			if(!this._children.length) {
-				this.close();
+				this.transitionOut();
 			}
 			return;
 		}
@@ -1715,6 +1716,28 @@ module.exports = require("./base").extend({
 
 
 		this.emit("addChild", child);
+	},
+
+
+	/**
+	 */
+
+	"transitionIn": function() {
+		this.$modal.css({ opacity: 0 }).transit({ opacity: 1 }, 200);
+	},
+
+	/**
+	 */
+
+	"transitionOut": function(cb) {
+		var self = this;
+		this.$modal.transit({ opacity: 0 }, 500, function() {
+			if(cb) {
+				cb();
+			} else {
+				self.close();
+			}
+		})
 	}
 
 });
