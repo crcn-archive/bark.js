@@ -1,8 +1,8 @@
 Bark.
 register("notify").
+reset().
 max(3).
-notificationClass("alert").
-modalClass("alert-modal").
+classes({ notification: "alert" }).
 options({ ok: "Yes!", cancel: "No" }).
 layout({ right: 10, top: 10 }).
 transitionIn({ left: 200, opacity: 0 }, { left: 0, opacity: 1 }).

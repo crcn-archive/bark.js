@@ -464,10 +464,8 @@ var NotificationBuilder = module.exports = structr({
 	 */
 
 	"__construct": function(inheritFrom) {
-		this._options = structr.copy(inheritFrom ? inheritFrom._options : {});
+        this.reset(structr.copy(inheritFrom ? inheritFrom._options : {}))
 		this._manager = new NotificationManager(this);
-
-		if(!this._options.max) this._options.max = 1;
 	},
 
 	/**
@@ -491,6 +489,8 @@ var NotificationBuilder = module.exports = structr({
 
 	"reset": function(options) {
 		this._options = options || {};
+        if(!this._options.max) this._options.max = 1;
+        return this;
 	},
 
 	/**
@@ -524,8 +524,9 @@ var NotificationBuilder = module.exports = structr({
 	 * the backbone view class for the notification
 	 */
 
-	"viewClass": function(viewClass) {
-		this._options.viewClass = viewClass;
+	"view": function(view) {
+		this._options.viewClass = view;
+        return this;
 	},
 
 
@@ -534,25 +535,49 @@ var NotificationBuilder = module.exports = structr({
 	 */
 
 	"modalClass": function(className) {
-		this._options.modalClass = className;
-		return this;
+		return this.setClass("modal", className);
 	},
 
-	/**
-	 * css class name for the notification
-	 */
+    /**
+     */
 
-	"notificationClass": function(className) {
-		this._options.notificationClass = className;
-		return this;
-	},
+    "containerClass": function(className) {
+        return this.setClass("container", className);
+    },
+
+    /**
+     * css class name for the notification
+     */
+
+    "notificationClass": function(className) {
+        return this.setClass("container", className);
+    },
+
+    /**
+     */
+
+    "classes": function(options) {
+        this._options.classes = options || {};
+        return this;
+    },
+
+    /**
+     */
+
+
+    "setClass": function(name, className) {
+        if(!this._options.classes) this._options.classes = {};
+        this._options.classes[name] = className;
+        return this;
+    },
+
 
 	/**
 	 */
 
 	"template": function(element) {
 		this._options.template = element;
-		return this.viewClass(TemplateView);
+		return this.view(TemplateView);
 	},
 
 	/**
@@ -1655,10 +1680,15 @@ module.exports = require("./base").extend({
 		this.$container = this.$el.find(".bark-container");
 		this.$modal     = this.$el.find(".bark-modal");
 
-		if(this.options.modalClass) {
+		if(this.options.classes.modal) {
 			this.$modal.css({ width: "100%", height: "100%" });
-			this.$modal.addClass(this.options.modalClass);
+			this.$modal.addClass(this.options.classes.modal);
 		}
+
+        if(this.options.classes.container) {
+            this.$container.addClass(this.$el.find(this.options.classes.container));
+        }
+
 		this.layout();
 		this.transitionIn();
 	},
@@ -1716,8 +1746,8 @@ module.exports = require("./base").extend({
 
 		options.$el = $el.find(".bark-inner-container");
 
-		if(this.options.notificationClass) {
-			options.$el.addClass(this.options.notificationClass);
+		if(this.options.classes.notification) {
+			options.$el.addClass(this.options.classes.notification);
 		}
 
 

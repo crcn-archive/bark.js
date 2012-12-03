@@ -5,33 +5,38 @@
           perspective: 600px;
 }
 
-.alert-notification-container {
+.bark-container {
+  width:100%;
+}
+
+.alert {
   width: 100%;
 }
 
+
 .alert-container {  
-  margin-top:20px;
-  padding: 20px;
+  padding: 12px;
+  width:100%;
   color: #FFF;
   text-align: center;
   background-color: rgba(0,0,0,0.7);
-  -webkit-border-radius: 5px;
-   -khtml-border-radius: 5px;
-     -moz-border-radius: 5px;
-          border-radius: 5px;
 }
 
 .alert-container > div {
+  width: 100%;
   color: #FFF;
-  clear: both;
-  font-size: 24px;
+  font-size: 15px;
   padding: 5px;
   margin-bottom: 8px;
 }
 
 .alert-container > a {
+  float: right;
+  margin-right: 30px;
   color: #000;
-  padding: 8px;
+  position:relative;
+  top: -3px;
+  padding: 5px;
   font-size: 13px;
   font-weight: bold;
   background-color: #FFF;

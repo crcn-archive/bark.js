@@ -1,0 +1,11 @@
+Bark.
+register("popdown").
+max(1).
+classes({ container: "alert-notification-container", notification: "alert" }).
+options({ ok: "sure"} ).
+transitionIn({ top: -50, opacity: 0 }, { top: 0, opacity: 1 }).
+transitionOut({ }, { top: -50, opacity: 0 }).
+template(templateHtml);
+
+
+Bark.popdown("Hey, some sort of action needs to be taken. Do you want to take it?");

@@ -41,7 +41,8 @@ function headReady() {
 
     var examples = {
     	alert: "Alert Example",
-    	growl: "Growl Example"
+    	growl: "Growl Example",
+        popdown: "Popdown Example"
     };
 
     for(var key in examples) {

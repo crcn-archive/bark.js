@@ -5,6 +5,9 @@
           perspective: 600px;
 }
 
+.alert-notification-container {
+  width: 100%;
+}
 
 .alert-container {  
   margin-top:20px;
