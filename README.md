@@ -92,8 +92,8 @@ Sets the class name of the background for the notifications. Set this property i
 
 Sets the maximum number of notifications that are allowed to be displayed simultaneously. 
 
-For growl-like notifications, this number should be set the greater than 1. 
-For alert-like notifications, this number should be set to one.
+For growl-like notifications, this number should be set the **greater than 1**. 
+For alert-like notifications, this number should be **set to 1**.
 
 ### closeAfterTime(ms) 
 
