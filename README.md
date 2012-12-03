@@ -97,5 +97,5 @@ For alert-like notifications, this number should be **set to 1**.
 
 ### closeAfterTime(ms) 
 
-Closes the notifications after the given duration (in milliseconds). 
+Closes the notifications after the given duration (in milliseconds). Use this for growl-like notifications.
 
