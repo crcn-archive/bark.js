@@ -80,6 +80,15 @@ Bark.alert({ closeAfterTime: 5000, message: "You have mail" }, function() {
 
 ## NotificationBuilder API
 
+### display(options, onClose)
+
+Displays a notification. 
+
+```javascript
+Bark.create().template("myTemplate").display("hello world!", function() {
+	
+});
+```
 
 ### transitionIn(from, to, easing)
 
