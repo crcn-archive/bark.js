@@ -1,6 +1,5 @@
 Bark.
 register("notify").
-reset().
 max(3).
 classes({ notification: "alert" }).
 options({ ok: "Yes!", cancel: "No" }).
@@ -19,6 +18,6 @@ function notify() {
 	Bark.notify("hello world! " + count);
 
 	setTimeout(notify, 1000);
-};
+}
 
 notify();
