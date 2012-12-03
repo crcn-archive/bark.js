@@ -472,6 +472,14 @@ var NotificationBuilder = module.exports = structr({
 	/**
 	 */
 
+	"defaults": function(options) {
+		this.options = structr.copy(this.options, options);
+		return this;
+	},
+
+	/**
+	 */
+
 	"reset": function(options) {
 		this.options = options || {};
 	},
@@ -499,7 +507,7 @@ var NotificationBuilder = module.exports = structr({
 	 */
 
 	"max": function(value) {
-		this.options.maxNotifications = value;
+		this.options.max = value;
 		return this;
 	},
 
@@ -533,7 +541,7 @@ var NotificationBuilder = module.exports = structr({
 	 */
 
 	"transitionIn": function(from, to, easing) {
-		this.options.transitionIn = { from: from || {}, to: to || {}, easing: easing };
+		this.options.transitionIn = { from: from || {}, to: to || {}, easing: easing || {} };
 		return this;
 	},
 
@@ -542,7 +550,7 @@ var NotificationBuilder = module.exports = structr({
 	 */
 
 	"transitionOut": function(from, to, easing) {
-		this.options.transitionOut = { from: from || {}, to: to || {}, easing: easing };
+		this.options.transitionOut = { from: from || {}, to: to || {}, easing: easing || {} };
 		return this;
 	},
 
@@ -1294,7 +1302,7 @@ module.exports = require("./base").extend({
 	"override __construct": function(options) {
 		this._super.apply(this, arguments);
 		this.options = options;
-		this.template = typeof options.template == "function" ? options.template : _.template($(this.options.template));
+		this.template = typeof options.template == "function" ? options.template : _.template(this.options.template);
 		this.render();
 	},
 
@@ -1317,12 +1325,15 @@ module.exports = structr(EventEmitter, {
 
 	"__construct": function(options) {
 		this.$el = options.$el;
+		this.parent = options.parent;
+		this.options = options;
 	},
 
 	/**
 	 */
 
 	"close": function() {
+		this.emit("close");
 		this.dispose();
 		this.$el.remove();
 	},
@@ -1332,6 +1343,13 @@ module.exports = structr(EventEmitter, {
 
 	"render": function() {
 		//override me
+	},
+
+	/**
+	 */
+
+	"display": function() {
+
 	},
 
 	/**
@@ -1526,8 +1544,14 @@ EventEmitter.prototype.listeners = function(type) {
 });
 
 require.define("/lib/manager.js",function(require,module,exports,__dirname,__filename,process,global){var structr = require("structr"),
-Notification = require("./notification"),
 Container    = require("./views/container");
+
+
+
+/**
+ * manages the main notification container
+ */
+
 
 module.exports = structr({
 
@@ -1536,7 +1560,6 @@ module.exports = structr({
 
 	"__construct": function(builder) {
 		this._builder = builder;
-		this._numNotifications = 0;
 	},
 
 	/**
@@ -1544,6 +1567,9 @@ module.exports = structr({
 
 	"display": function(options) {
 
+		if(typeof options == "string") {
+			options = { message: options };
+		}
 
 		if(!this._container) {
 			this._container = new Container(this._builder.options);
@@ -1554,8 +1580,7 @@ module.exports = structr({
 			});
 		}
 
-
-		return this._container.addNotification(options);
+		return this._container.addNotification(structr.copy(this._builder.options, options, {}));
 	},
 
 
@@ -1568,32 +1593,9 @@ module.exports = structr({
 });
 });
 
-require.define("/lib/notification.js",function(require,module,exports,__dirname,__filename,process,global){var structr = require("structr"),
-EventEmitter = require("events").EventEmitter;
+require.define("/lib/views/container.js",function(require,module,exports,__dirname,__filename,process,global){var Notification = require("./notification");
 
-
-module.exports = structr(EventEmitter, {
-
-	/**
-	 */
-
-	"__construct": function(options) {
-		this.options = structr.copy(options);
-	},
-
-	/**
-	 */
-
-	"display": function(data) {
-		var self = this;
-		setTimeout(function() {
-			self.emit("close");
-		})
-	}
-});
-});
-
-require.define("/lib/views/container.js",function(require,module,exports,__dirname,__filename,process,global){module.exports = require("./base").extend({
+module.exports = require("./base").extend({
 
 	/**
 	 */
@@ -1602,28 +1604,124 @@ require.define("/lib/views/container.js",function(require,module,exports,__dirna
 		this.max = options.max || 1;
 		this.viewClass = options.viewClass;
 		this._children = [];
+		this._queue = [];
 
 
-		this._super({ $el: $("<div class='bark-container' style='z-index:999;position:fixed;'>ff</div>") });
+		this._super({ $el: $("<div class='bark-container' style='z-index:999;position:fixed;'></div>") });
+		this._id = 0;
 	},
 
 	/**
 	 */
 
 	"addNotification": function(options) {
-
-		console.log(this.viewClass)
-		// var child = new this.viewClass({ el:  })
-		// this._children.push(child);
-		// child.render();
+		this._queue.push(options);
+		this._addNextNotification();
 	},
 
 	/**
 	 */
 
-
 	"display": function() {
 		$(document.body).append(this.$el);
+	},
+
+	/**
+	 */
+
+	"_addNextNotification": function() {
+
+		if(this._children.length >= this.max) return;
+
+		var options = this._queue.shift();
+
+		//no more notifications? end.
+		if(!options) return this.close();
+
+		//
+		var id = "bark-notification" + (this._id++),
+		self = this,
+		$el = options.$el = $("<div id='" + id + "'> </div>");
+		this.$el.append($el);
+
+
+		//create a new notification child, and pass the view class
+		var child = new Notification(options);
+		this._children.push(child);
+
+		//display it
+		child.render();
+
+		//on close, show next notification
+		child.once("close", function() {
+			self._children.splice(self._children.indexOf(child), 1);
+			self.emit("removeChild", child);
+			self._addNextNotification();
+		});
+
+
+		this.emit("addChild", child);
+	}
+
+});
+});
+
+require.define("/lib/views/notification.js",function(require,module,exports,__dirname,__filename,process,global){module.exports = require("./base").extend({
+
+	/**
+	 */
+
+	"override __construct": function(options) {
+		this.view = new options.viewClass(options);
+		this._super.apply(this, arguments);
+	},
+
+	/**
+	 */
+
+	"render": function() {
+
+		this.view.render();
+		this.transitionIn();
+
+		// this.transitionIn();
+
+		// console.log(this.options)
+
+		var self = this;
+		//find the close button
+		this.$el.find(".close").one("click", function() {
+			self.transitionOut(function() {
+				self.close();
+			});
+		})
+	},
+
+
+	/**
+	 */
+
+	"transitionIn": function(cb) {
+		if(!this.options.transitionIn) return;
+
+		var tin = this.options.transitionIn;
+
+		this.$el.
+		css(tin.from).
+		transition(tin.to, tin.easing.duration, tin.easing.type, cb);
+	},
+
+
+	/**
+	 */
+
+	"transitionOut": function(cb) {
+		if(!this.options.transitionOut) return;
+		var tout = this.options.transitionOut;
+
+		this.$el.
+		css(tout.from).
+		transition(tout.to, tout.easing.duration || 200, tout.easing.type, cb);
 	}
 
 });
@@ -1640,6 +1738,8 @@ if(typeof window !== "undefined") {
 if(typeof module.exports !== "undefined") {
   module.exports = bark;
 }
+
+console.log("RED")
 });
 require("/lib/index.js");
 })();
