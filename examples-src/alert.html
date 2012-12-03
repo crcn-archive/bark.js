@@ -11,11 +11,14 @@ title: Growl Notifications
 		Bark.
 		register("alert").
 		defaults({ ok: "OK" }).
-		max(1).
+		max(2).
 		modalClass("alert-modal").
-		layout({ right: 10, center: true, top: 200 }).
-		transitionIn({  scale: 0.75, opacity: 0 }, {  opacity: 1, scale: 1 }).
-		transitionOut({ opacity: 1 }, { opacity: 0, scale: 1.25 }).
+		notificationClass("alert").
+		layout({ width: 300, center: true, top: 200 }).
+		transitionIn({ rotateY: -90,  opacity: 0 }, { rotateY: 0, opacity: 1 }, { duration: 800, type: 'in-out' }).
+		transitionOut(null, { rotateY: 90, opacity: 0 }, { duration: 500 }).
+		// transitionIn({  scale: 0.75, opacity: 0 }, {  opacity: 1, scale: 1 }).
+		// transitionOut({ opacity: 1 }, { opacity: 0, scale: 1.25 }).
 		template($("[template-name='alert']").html());
 
 
@@ -31,7 +34,7 @@ title: Growl Notifications
 </script>
 
 <script type="text/ejs" template-name="alert">
-	<div class="alert">
+	<div class="alert-container">
 		<div><%-message %></div>
 		<a href="#" class="alert-ok close" data-name="ok"><%-ok %></a>
 	</div>

@@ -530,10 +530,20 @@ var NotificationBuilder = module.exports = structr({
 
 
 	/**
+	 * css class name for the modal
 	 */
 
 	"modalClass": function(className) {
 		this.options.modalClass = className;
+		return this;
+	},
+
+	/**
+	 * css class name for the notification
+	 */
+
+	"notificationClass": function(className) {
+		this.options.notificationClass = className;
 		return this;
 	},
 
@@ -1668,6 +1678,7 @@ module.exports = require("./base").extend({
 			position: "absolute"
 		};
 
+
 		if(layout.center) {
 			css.width = css.width || 300;
 			css["margin-left"] = css["margin-right"] = "auto";
@@ -1698,8 +1709,16 @@ module.exports = require("./base").extend({
 		//
 		var id = "bark-notification" + (this._id++),
 		self = this,
-		$el = options.$el = $("<div id=\"" + id + "\" style=\"position:relative;\"> </div>");
+
+		//note - 
+		$el = $("<div id=\"" + id + "\" class=\"bark-notification\"><div class=\"bark-inner-container\" style=\"position:relative;\"></div></div>");
 		this.$container.append($el);
+
+		options.$el = $el.find(".bark-inner-container");
+
+		if(this.options.notificationClass) {
+			options.$el.addClass(this.options.notificationClass);
+		}
 
 
 		//create a new notification child, and pass the view class
@@ -1760,14 +1779,9 @@ require.define("/lib/views/notification.js",function(require,module,exports,__di
 		this.view.render();
 		this.transitionIn();
 
-		// this.transitionIn();
-
-		// console.log(this.options)
-
 		var self = this;
-		//find the close button
 
-
+		//find all the close buttons - there maybe multiple
 		this.$el.find(".close").one("click", function() {
 
 			//this chunk allows for the detection of a particular button
@@ -1780,6 +1794,8 @@ require.define("/lib/views/notification.js",function(require,module,exports,__di
 			});
 		});
 
+
+		//timeout active? probably a growl-like notification
 		if(this.options.closeAfterTime) {
 			setTimeout(function() {
 				self.transitionOut();
@@ -1795,7 +1811,7 @@ require.define("/lib/views/notification.js",function(require,module,exports,__di
 		if(!this.options.transitionIn) return;
 
 		var tin = this.options.transitionIn;
-
+		
 		this.$el.
 		css(tin.from).
 		transition(tin.to, tin.easing.duration, tin.easing.type, cb);
