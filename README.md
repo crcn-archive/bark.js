@@ -13,6 +13,13 @@
 
 - For any animation documentation, see [transit](http://ricostacruz.com/jquery.transit/)
 
+## Use Case
+
+- Alerts
+- Confirmations - customized anyway you want
+- Growl-like notifications
+- View states
+
 
 ## API
 
