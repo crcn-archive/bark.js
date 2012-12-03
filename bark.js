@@ -446,6 +446,7 @@ module.exports = structr({
 
 		this[name] = function (options, onClose) {
 			self.notification(name).display(options, onClose);
+			return self; //ability to chain.
 		}
 	}
 });
