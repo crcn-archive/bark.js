@@ -1,3 +1,5 @@
+A super dynamic, 17kb notification system.
+
 ## Build Requirements
 
 - node.js
