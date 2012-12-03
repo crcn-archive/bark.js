@@ -528,6 +528,15 @@ var NotificationBuilder = module.exports = structr({
 		this.options.viewClass = viewClass;
 	},
 
+
+	/**
+	 */
+
+	"modalClass": function(className) {
+		this.options.modalClass = className;
+		return this;
+	},
+
 	/**
 	 */
 
@@ -1357,6 +1366,7 @@ module.exports = structr(EventEmitter, {
 
 	"dispose": function() {
 		this.emit("dispose");
+		this._events = {};
 		this.$el.find("*").unbind();
 	}
 });
@@ -1607,7 +1617,14 @@ module.exports = require("./base").extend({
 		this._queue = [];
 
 
-		this._super({ $el: $("<div class='bark-container' style='z-index:999;position:fixed;'></div>") });
+		var tpl = "<div class=\"bark-bark\" style=\"position:fixed;z-index:99999;width:100%;height:100%;top:0px;left:0px;\">" +
+					"<div class=\"bark-modal\" style=\"position:absolute;left:0px;top:0px;width:100%;height:100%\"></div>" + 
+					"<div class=\"bark-container\"></div>" + 
+				  "</div>";
+
+		options.$el = $(tpl);
+
+		this._super(options);
 		this._id = 0;
 	},
 
@@ -1624,6 +1641,38 @@ module.exports = require("./base").extend({
 
 	"display": function() {
 		$(document.body).append(this.$el);
+		this.$container = this.$el.find(".bark-container");
+		this.$modal     = this.$el.find(".bark-modal");
+
+		if(this.options.modalClass) {
+			this.$modal.addClass(this.options.modalClass);
+		}
+		this.layout();
+	},
+
+	/**
+	 */
+
+	"layout": function() {
+
+		var layout = this.options.layout || {},
+		css = {
+			width: layout.width,
+			right: layout.right,
+			bottom: layout.bottom,
+			top: layout.top,
+			left: layout.left,
+			position: "absolute"
+		};
+
+		if(layout.center) {
+			css.width = css.width || 300;
+			css["margin-left"] = css["margin-right"] = "auto";
+			css.position = "relative";
+		}
+
+
+		this.$container.css(css);
 	},
 
 	/**
@@ -1636,13 +1685,18 @@ module.exports = require("./base").extend({
 		var options = this._queue.shift();
 
 		//no more notifications? end.
-		if(!options) return this.close();
+		if(!options) {
+			if(!this._children.length) {
+				this.close();
+			}
+			return;
+		}
 
 		//
 		var id = "bark-notification" + (this._id++),
 		self = this,
-		$el = options.$el = $("<div id='" + id + "'> </div>");
-		this.$el.append($el);
+		$el = options.$el = $("<div id=\"" + id + "\" style=\"position:relative;\"> </div>");
+		this.$container.append($el);
 
 
 		//create a new notification child, and pass the view class
@@ -1674,6 +1728,9 @@ require.define("/lib/views/notification.js",function(require,module,exports,__di
 	"override __construct": function(options) {
 		this.view = new options.viewClass(options);
 		this._super.apply(this, arguments);
+
+
+
 	},
 
 	/**
@@ -1690,11 +1747,17 @@ require.define("/lib/views/notification.js",function(require,module,exports,__di
 
 		var self = this;
 		//find the close button
+
+
 		this.$el.find(".close").one("click", function() {
-			self.transitionOut(function() {
-				self.close();
-			});
-		})
+			self.transitionOut();
+		});
+
+		if(this.options.closeAfterTime) {
+			setTimeout(function() {
+				self.transitionOut();
+			}, this.options.closeAfterTime);
+		}
 	},
 
 
@@ -1717,11 +1780,20 @@ require.define("/lib/views/notification.js",function(require,module,exports,__di
 
 	"transitionOut": function(cb) {
 		if(!this.options.transitionOut) return;
-		var tout = this.options.transitionOut;
+		var tout = this.options.transitionOut,
+		$el = this.$el,
+		self = this;
 
-		this.$el.
+		$el.
 		css(tout.from).
-		transition(tout.to, tout.easing.duration || 200, tout.easing.type, cb);
+		transition(tout.to, tout.easing.duration || 200, tout.easing.type, function() {
+			// $el.transition({ width: 0, height: 0 }, 1000, cb);
+			if(cb) {
+				cb();
+			} else {
+				self.close();
+			}
+		});
 	}
 
 });
