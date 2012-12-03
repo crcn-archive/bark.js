@@ -10,5 +10,5 @@ examples:
 
 
 clean:
-	rm -rf examples lib; 
+	rm -rf examples; 
 

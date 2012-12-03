@@ -19,4 +19,4 @@ closeAfter(1000 * 5); //5 seconds
 
 bark.alert("hello world!", function() {
 
-}).closeAfter(100);
+})
