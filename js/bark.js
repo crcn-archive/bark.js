@@ -1896,7 +1896,6 @@ if(typeof module.exports !== "undefined") {
   module.exports = bark;
 }
 
-console.log("RED")
 });
 require("/lib/index.js");
 })();
