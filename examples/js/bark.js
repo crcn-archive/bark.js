@@ -567,7 +567,7 @@ var NotificationBuilder = module.exports = structr({
 	 */
 
 	"display": function(options, onClose) {
-		this._manager.display(options);//.once("close", onClose || function(){ });
+		this._manager.display(options, onClose);
 	},
 
 	/**
@@ -1575,11 +1575,13 @@ module.exports = structr({
 	/**
 	 */
 
-	"display": function(options) {
+	"display": function(options, onClose) {
 
 		if(typeof options == "string") {
 			options = { message: options };
 		}
+
+		options.onClose = onClose || function(){};
 
 		if(!this._container) {
 			this._container = new Container(this._builder.options);
@@ -1751,9 +1753,6 @@ require.define("/lib/views/notification.js",function(require,module,exports,__di
 	"override __construct": function(options) {
 		this.view = new options.viewClass(options);
 		this._super.apply(this, arguments);
-
-
-
 	},
 
 	/**
@@ -1815,6 +1814,7 @@ require.define("/lib/views/notification.js",function(require,module,exports,__di
 				cb();
 			} else {
 				self.close();
+				self.options.onClose();
 			}
 		});
 	}
