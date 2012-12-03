@@ -1,0 +1,53 @@
+---
+layout: default
+title: Growl Notifications
+---
+
+{% capture scripts %}
+<link rel="stylesheet/less" type="text/css" href="./less/alert.less">
+<script type="text/javascript">
+
+	function headReady() {
+		Bark.
+		register("alert").
+		defaults({ ok: "OK" }).
+		max(2).
+		modalClass("alert-modal").
+		notificationClass("alert").
+		layout({ width: 300, center: true, top: 200 }).
+		transitionIn({ rotateY: -90,  opacity: 0 }, { rotateY: 0, opacity: 1 }, { duration: 800, type: 'in-out' }).
+		transitionOut(null, { rotateY: 90, opacity: 0 }, { duration: 500 }).
+		// transitionIn({  scale: 0.75, opacity: 0 }, {  opacity: 1, scale: 1 }).
+		// transitionOut({ opacity: 1 }, { opacity: 0, scale: 1.25 }).
+		template($("[template-name='alert']").html());
+
+
+		for(var i = 10; i--;)
+		Bark.alert("hello world!" + i, function(event) {
+			if(event.ok) {
+				console.log("OK!")
+			}
+		});	
+			
+	}
+	
+</script>
+
+<script type="text/ejs" template-name="alert">
+	<div class="alert-container">
+		<div><%-message %></div>
+		<a href="#" class="alert-ok close" data-name="ok"><%-ok %></a>
+	</div>
+</script>
+
+{% endcapture %}
+
+{% capture content %}
+
+
+<div class="scroll-test" style="height:1000px;"></div>
+
+
+{% endcapture %}
+
+{% include layout.html %}
