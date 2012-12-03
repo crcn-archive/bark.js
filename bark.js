@@ -481,6 +481,14 @@ var NotificationBuilder = module.exports = structr({
 	/**
 	 */
 
+	"extend": function(options) {
+		this.options = structr.copy(options, this.options);
+		return this;
+	},
+
+	/**
+	 */
+
 	"reset": function(options) {
 		this.options = options || {};
 	},
