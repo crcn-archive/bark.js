@@ -1683,7 +1683,7 @@ module.exports = require("./base").extend({
 
 	"_addNextNotification": function() {
 
-		if(this._children.length >= this.max) return;
+		if(~this.max && this._children.length >= this.max) return;
 
 		var options = this._queue.shift();
 
