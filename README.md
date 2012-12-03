@@ -63,6 +63,18 @@ Bark.alert("hello world!", function(event) {
 });
 ```
 
+## Customizing Individual Notifications
+
+Bark allows you to customize notifications individually. Here's an example using are alert system above:
+
+```javascript
+
+//closes the window after 5 seconds if the user hasn't clicked the "OK" button
+Bark.alert({ closeAfterTime: 5000, message: "You have mail" }, function() {
+	
+});
+```
+
 
 ## NotificationBuilder API
 
