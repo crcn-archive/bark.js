@@ -396,59 +396,59 @@ structr = require("structr");
 
 module.exports = structr({
 
-	/**
-	 */
+    /**
+     */
 
-	"override __construct": function () {
-		this._super.apply(this, arguments);
-		this._notificationBuilders = {};
-	},
+    "override __construct": function () {
+        this._super.apply(this, arguments);
+        this._notificationBuilders = {};
+    },
 
-	/**
-	 * creates a new bark notification
-	 */
+    /**
+     * creates a new bark notification
+     */
 
-	"create": function (inheritFrom) {
-		return new NotificationBuilder(typeof inheritFrom == "string" ? this.notification(inheritFrom) : inheritFrom);
-	},
+    "create": function (inheritFrom) {
+        return new NotificationBuilder(typeof inheritFrom == "string" ? this.notification(inheritFrom) : inheritFrom);
+    },
 
-	/**
-	 * returns an existing bark notification
-	 */
+    /**
+     * returns an existing bark notification
+     */
 
-	"notification": function (name) {
-		return this._notificationBuilders[name];
-	},
+    "notification": function (name) {
+        return this._notificationBuilders[name];
+    },
 
-	/**
-	 * registers a bark notification
-	 */
+    /**
+     * registers a bark notification
+     */
 
-	"register": function (name, inheritFrom) {
+    "register": function (name, inheritFrom) {
 
-		if(!this._notificationBuilders[name]) {
-			this._notificationBuilders[name] = this.create(inheritFrom);
-			this._register(name);
-		}
+        if(!this._notificationBuilders[name]) {
+            this._notificationBuilders[name] = this.create(inheritFrom);
+            this._register(name);
+        }
 
-		return this._notificationBuilders[name];
-	},
+        return this._notificationBuilders[name];
+    },
 
-	/**
-	 * attaches the notification to this object
-	 */
+    /**
+     * attaches the notification to this object
+     */
 
-	"_register": function (name) {
+    "_register": function (name) {
 
-		var self = this;
+        var self = this;
 
-		if(!!this[name]) throw new Error("Notification '" + name + "' already exists.");
+        if(!!this[name]) throw new Error("Notification '" + name + "' already exists.");
 
-		this[name] = function (options, onClose) {
-			self.notification(name).display(options, onClose);
-			return self; //ability to chain.
-		}
-	}
+        this[name] = function (options, onClose) {
+            self.notification(name).display(options, onClose);
+            return self; //ability to chain.
+        }
+    }
 });
 });
 
@@ -459,90 +459,92 @@ NotificationManager = require("./manager");
 
 var NotificationBuilder = module.exports = structr({
 
-	/**
-	 * existing options form an inherited notification
-	 */
+    /**
+     * existing options form an inherited notification
+     */
 
-	"__construct": function(inheritFrom) {
-        this.reset(structr.copy(inheritFrom ? inheritFrom._options : {}))
-		this._manager = new NotificationManager(this);
-	},
+    "__construct": function(inheritFrom) {
+        this.options = structr.copy(inheritFrom ? inheritFrom.options : {});
+        this._manager = new NotificationManager(this);
 
-	/**
-	 */
-
-	"defaults": function(options) {
-		this._options = structr.copy(this._options, options);
-		return this;
-	},
-
-	/**
-	 */
-
-	"options": function(options) {
-		this._options = structr.copy(options, this._options);
-		return this;
-	},
-
-	/**
-	 */
-
-	"reset": function(options) {
-		this._options = options || {};
-        if(!this._options.max) this._options.max = 1;
-        return this;
-	},
-
-	/**
-	 * close the notification after this time
-	 */
-
-	"closeAfterTime": function(value) {
-		this._options.closeAfterTime = value;
-		return this;
-	},
-
-	/**
-	 * max number of notifications to show at one time
-	 */
-
-	"max": function(value) {
-		this._options.max = value;
-		return this;
-	},
-
-	/**
-	 * layout information for the notification: vertical, horizontal
-	 */
-
-	"layout": function(value) {
-		this._options.layout = value;
-		return this;
-	},
-
-	/**
-	 * the backbone view class for the notification
-	 */
-
-	"view": function(view) {
-		this._options.viewClass = view;
-        return this;
-	},
-
-
-	/**
-	 * css class name for the modal
-	 */
-
-	"modalClass": function(className) {
-		return this.setClass("modal", className);
-	},
+        if(!this.options.max) this.options.max = 1;
+    },
 
     /**
      */
 
-    "containerClass": function(className) {
-        return this.setClass("container", className);
+    "defaults": function(options) {
+        this.options = structr.copy(this.options, options);
+        return this;
+    },
+
+    /**
+     */
+
+    "extend": function(options) {
+        this.options = structr.copy(options, this.options);
+        return this;
+    },
+
+    /**
+     */
+
+    "reset": function(options) {
+        this.options = options || {};
+    },
+
+    /**
+     * close the notification after this time
+     */
+
+    "closeAfterTime": function(value) {
+        this.options.closeAfterTime = value;
+        return this;
+    },
+
+    /**
+     * position: left, right, top, bottom
+     */
+
+    "position": function(options) {
+        this.options.position = options;
+        return this;
+    },
+
+    /**
+     * max number of notifications to show at one time
+     */
+
+    "max": function(value) {
+        this.options.max = value;
+        return this;
+    },
+
+    /**
+     * layout information for the notification: vertical, horizontal
+     */
+
+    "layout": function(value) {
+        this.options.layout = value;
+        return this;
+    },
+
+    /**
+     * the backbone view class for the notification
+     */
+
+    "viewClass": function(viewClass) {
+        this.options.viewClass = viewClass;
+    },
+
+
+    /**
+     * css class name for the modal
+     */
+
+    "modalClass": function(className) {
+        this.options.modalClass = className;
+        return this;
     },
 
     /**
@@ -550,67 +552,49 @@ var NotificationBuilder = module.exports = structr({
      */
 
     "notificationClass": function(className) {
-        return this.setClass("container", className);
-    },
-
-    /**
-     */
-
-    "classes": function(options) {
-        this._options.classes = options || {};
+        this.options.notificationClass = className;
         return this;
     },
 
     /**
      */
 
+    "template": function(element) {
+        this.options.template = element;
+        return this.viewClass(TemplateView);
+    },
 
-    "setClass": function(name, className) {
-        if(!this._options.classes) this._options.classes = {};
-        this._options.classes[name] = className;
+    /**
+     * transition in styles
+     */
+
+    "transitionIn": function(from, to, easing) {
+        this.options.transitionIn = { from: from || {}, to: to || {}, easing: easing || {} };
         return this;
     },
 
+    /**
+     * transition out styles
+     */
 
-	/**
-	 */
+    "transitionOut": function(from, to, easing) {
+        this.options.transitionOut = { from: from || {}, to: to || {}, easing: easing || {} };
+        return this;
+    },
 
-	"template": function(element) {
-		this._options.template = element;
-		return this.view(TemplateView);
-	},
+    /**
+     */
 
-	/**
-	 * transition in styles
-	 */
+    "display": function(options, onClose) {
+        this._manager.display(options, onClose);
+    },
 
-	"transitionIn": function(from, to, easing) {
-		this._options.transitionIn = { from: from || {}, to: to || {}, easing: easing || {} };
-		return this;
-	},
+    /**
+     */
 
-	/**
-	 * transition out styles
-	 */
-
-	"transitionOut": function(from, to, easing) {
-		this._options.transitionOut = { from: from || {}, to: to || {}, easing: easing || {} };
-		return this;
-	},
-
-	/**
-	 */
-
-	"display": function(options, onClose) {
-		this._manager.display(options, onClose);
-	},
-
-	/**
-	 */
-
-	"clone": function() {
-		return new NotificationBuilder(this);
-	}
+    "clone": function() {
+        return new NotificationBuilder(this);
+    }
 });
 });
 
@@ -619,32 +603,32 @@ require.define("/node_modules/structr/package.json",function(require,module,expo
 
 require.define("/node_modules/structr/lib/index.js",function(require,module,exports,__dirname,__filename,process,global){var Structr = function () {
 
-	var that = Structr.extend.apply(null, arguments);
+    var that = Structr.extend.apply(null, arguments);
 
-	if (!that.structurized) {
+    if (!that.structurized) {
 
-		that = Structr.ize(that);
+        that = Structr.ize(that);
 
-	}
+    }
 
-	for (var prop in that) {
+    for (var prop in that) {
 
-		that.__construct.prototype[prop] = that[prop];
+        that.__construct.prototype[prop] = that[prop];
 
-	}
+    }
 
 
-	if (!that.__construct.extend) {
+    if (!that.__construct.extend) {
 
-		//allow for easy extending.
-		that.__construct.extend = function() {
-			return Structr.apply(null, [that].concat(Array.apply([], arguments)))
+        //allow for easy extending.
+        that.__construct.extend = function() {
+            return Structr.apply(null, [that].concat(Array.apply([], arguments)))
 
-		};
-	}
+        };
+    }
 
-	//return the constructor
-	return that.__construct;
+    //return the constructor
+    return that.__construct;
 };
 
 /**
@@ -653,49 +637,49 @@ require.define("/node_modules/structr/lib/index.js",function(require,module,expo
 
 Structr.copy = function (from, to, lite) {
 
-	if (typeof to == 'boolean') {
-		lite = to;
-		to = undefined;
-	}
-	
-	if (!to) to = from instanceof Array ? [] : {};  
-	
-	var i;
+    if (typeof to == 'boolean') {
+        lite = to;
+        to = undefined;
+    }
+    
+    if (!to) to = from instanceof Array ? [] : {};  
+    
+    var i;
 
-	for (i in from) {
+    for (i in from) {
 
-		var fromValue = from[i],
-		toValue = to[i],
-		newValue;
+        var fromValue = from[i],
+        toValue = to[i],
+        newValue;
 
-		//don't copy anything fancy other than objects and arrays. this could really screw classes up, such as dates.... (yuck)
-		if (!lite && typeof fromValue == 'object' && (!fromValue || fromValue.constructor.prototype == Object.prototype || fromValue instanceof Array)) {
+        //don't copy anything fancy other than objects and arrays. this could really screw classes up, such as dates.... (yuck)
+        if (!lite && typeof fromValue == 'object' && (!fromValue || fromValue.constructor.prototype == Object.prototype || fromValue instanceof Array)) {
 
-			//if the toValue exists, and the fromValue is the same data type as the TO value, then
-			//merge the FROM value with the TO value, instead of replacing it
-			if (toValue && fromValue instanceof toValue.constructor) {
+            //if the toValue exists, and the fromValue is the same data type as the TO value, then
+            //merge the FROM value with the TO value, instead of replacing it
+            if (toValue && fromValue instanceof toValue.constructor) {
 
-				newValue = toValue;
+                newValue = toValue;
 
-			//otherwise replace it, because FROM has priority over TO
-			} else {
+            //otherwise replace it, because FROM has priority over TO
+            } else {
 
-				newValue = fromValue instanceof Array ? [] : {};
+                newValue = fromValue instanceof Array ? [] : {};
 
-			}
+            }
 
-			Structr.copy(fromValue, newValue);
+            Structr.copy(fromValue, newValue);
 
-		} else {
+        } else {
 
-			newValue = fromValue;
+            newValue = fromValue;
 
-		}
+        }
 
-		to[i] = newValue;
-	}
+        to[i] = newValue;
+    }
 
-	return to;
+    return to;
 };
 
 
@@ -704,9 +688,9 @@ Structr.copy = function (from, to, lite) {
  */
 
 Structr.getMethod = function (that, property) {
-	return function() {
-		return that[property].apply(that, arguments);
-	};
+    return function() {
+        return that[property].apply(that, arguments);
+    };
 };
 
 /**
@@ -715,40 +699,40 @@ Structr.getMethod = function (that, property) {
  
 Structr.wrap = function (that, prop) {
 
-	if (that._wrapped) return that;
+    if (that._wrapped) return that;
 
-	that._wrapped = true;
+    that._wrapped = true;
 
-	function wrap(target) {
+    function wrap(target) {
 
-		return function() {
+        return function() {
 
-			return target.apply(that, arguments);
+            return target.apply(that, arguments);
 
-		};
+        };
 
-	}
+    }
 
-	if (prop) {
+    if (prop) {
 
-		that[prop] = wrap(target[prop]);
-		return that;
+        that[prop] = wrap(target[prop]);
+        return that;
 
-	}
+    }
 
-	for (var property in that) {
+    for (var property in that) {
 
-		var target = that[property];
-			
-		if (typeof target == 'function') {
+        var target = that[property];
+            
+        if (typeof target == 'function') {
 
-			that[property] = wrap(target);
+            that[property] = wrap(target);
 
-		}
+        }
 
-	}
+    }
 
-	return that;
+    return that;
 
 }  
 
@@ -758,22 +742,22 @@ Structr.wrap = function (that, prop) {
 
 Structr.findProperties = function (target, modifier) {
 
-	var props = [],
-		property;
+    var props = [],
+        property;
 
-	for (property in target) {
+    for (property in target) {
 
-		var v = target[property];
+        var v = target[property];
 
-		if (v && v[modifier]) {
+        if (v && v[modifier]) {
 
-			props.push(property);
+            props.push(property);
 
-		}
+        }
 
-	}
+    }
 
-	return props;
+    return props;
 
 };
 
@@ -783,8 +767,8 @@ Structr.findProperties = function (target, modifier) {
 
 Structr.nArgs = function (func) { 
 
-	var inf = func.toString().replace(/\{[\W\S]+\}/g, '').match(/\w+(?=[,\)])/g);
-	return inf ? inf.length :0;
+    var inf = func.toString().replace(/\{[\W\S]+\}/g, '').match(/\w+(?=[,\)])/g);
+    return inf ? inf.length :0;
 
 }
 
@@ -794,7 +778,7 @@ Structr.nArgs = function (func) {
 
 Structr.getFuncsByNArgs = function (that, property) {
 
-	return that.__private['overload::' + property] || (that.__private['overload::' + property] = {});
+    return that.__private['overload::' + property] || (that.__private['overload::' + property] = {});
 
 }
 
@@ -803,8 +787,8 @@ Structr.getFuncsByNArgs = function (that, property) {
 
 Structr.getOverloadedMethod = function (that, property, nArgs) {
 
-	var funcsByNArgs = Structr.getFuncsByNArgs(that, property);
-	return funcsByNArgs[nArgs];
+    var funcsByNArgs = Structr.getFuncsByNArgs(that, property);
+    return funcsByNArgs[nArgs];
 
 }
 
@@ -813,12 +797,12 @@ Structr.getOverloadedMethod = function (that, property, nArgs) {
 
 Structr.setOverloadedMethod = function (that, property, func, nArgs) {
 
-	var funcsByNArgs = Structr.getFuncsByNArgs(that, property);
-	
-	if(func.overloaded) return funcsByNArgs;
-	
-	funcsByNArgs[nArgs || Structr.nArgs(func)] = func;
-	return funcsByNArgs;
+    var funcsByNArgs = Structr.getFuncsByNArgs(that, property);
+    
+    if(func.overloaded) return funcsByNArgs;
+    
+    funcsByNArgs[nArgs || Structr.nArgs(func)] = func;
+    return funcsByNArgs;
 
 }
 
@@ -827,20 +811,20 @@ Structr.setOverloadedMethod = function (that, property, func, nArgs) {
  */
 
 Structr._mixin = {
-	operators: {}
+    operators: {}
 };
 
 
 Structr.mixin = function (options) {
 
-	switch(options.type) {
-		case "operator": 
-			Structr._mixin.operators[options.name] = options.factory;
-		break;
-		default:
-			throw new Error("Mixin type " + options.type + "does not exist");
-		break;
-	}
+    switch(options.type) {
+        case "operator": 
+            Structr._mixin.operators[options.name] = options.factory;
+        break;
+        default:
+            throw new Error("Mixin type " + options.type + "does not exist");
+        break;
+    }
 }
 
 
@@ -851,175 +835,175 @@ Structr.mixin = function (options) {
 
 Structr.modifiers =  {
 
-	/**
-	* overrides given method
-	*/
+    /**
+    * overrides given method
+    */
 
-	_override: function (that, property, newMethod) {
+    _override: function (that, property, newMethod) {
 
-		var oldMethod = (that.__private && that.__private[property]) || that[property] || function (){},
-			parentMethod = oldMethod;
-		
-		if(oldMethod.overloaded) {
+        var oldMethod = (that.__private && that.__private[property]) || that[property] || function (){},
+            parentMethod = oldMethod;
+        
+        if(oldMethod.overloaded) {
 
-			var overloadedMethod = oldMethod,
-			    nArgs            = Structr.nArgs(newMethod);
+            var overloadedMethod = oldMethod,
+                nArgs            = Structr.nArgs(newMethod);
 
-			parentMethod = Structr.getOverloadedMethod(that, property, nArgs);
+            parentMethod = Structr.getOverloadedMethod(that, property, nArgs);
 
-		}
-		
-		//wrap the method so we can access the parent overloaded function
-		var wrappedMethod = function () {
+        }
+        
+        //wrap the method so we can access the parent overloaded function
+        var wrappedMethod = function () {
 
-			this._super = parentMethod;
-			var ret = newMethod.apply(this, arguments);
-			delete this._super;
-			return ret;
+            this._super = parentMethod;
+            var ret = newMethod.apply(this, arguments);
+            delete this._super;
+            return ret;
 
-		}
+        }
 
-		wrappedMethod.parent = newMethod;
-		
-		if(oldMethod.overloaded) {
+        wrappedMethod.parent = newMethod;
+        
+        if(oldMethod.overloaded) {
 
-			return Structr.modifiers._overload(that, property, wrappedMethod, nArgs);
+            return Structr.modifiers._overload(that, property, wrappedMethod, nArgs);
 
-		}
-		
-		return wrappedMethod;
-	},
-
-
-	/**
-	* getter / setter which are physical functions: e.g: test.myName(), and test.myName('craig')
-	*/
-
-	_explicit: function (that, property, gs) {
-
-		var pprop = '__'+property;
-
-		//if GS is not defined, then set defaults.
-		if (typeof gs != 'object') {
-
-			gs = {};
-
-		}
-
-		if (!gs.get) {
-
-			gs.get = function () {
-
-				return this._value;
-
-			}
-		}
-
-		if (!gs.set) {
-
-			gs.set = function (value) {
-
-				this._value = value;
-
-			}
-
-		}
+        }
+        
+        return wrappedMethod;
+    },
 
 
-		return function (value) {
+    /**
+    * getter / setter which are physical functions: e.g: test.myName(), and test.myName('craig')
+    */
 
-			//getter
-			if (!arguments.length) {
+    _explicit: function (that, property, gs) {
 
-				this._value = this[pprop];
-				var ret     = gs.get.apply(this);
+        var pprop = '__'+property;
 
-				delete this._value;
-				return ret;
+        //if GS is not defined, then set defaults.
+        if (typeof gs != 'object') {
 
-			//setter
-			} else {
+            gs = {};
 
-				//don't call the gs if the value isn't the same
-				if (this[pprop] == value) return;
+        }
 
-				//set the current value to the setter value
-				this._value = this[pprop];
+        if (!gs.get) {
 
-				//set
-				gs.set.apply(this, [value]);
+            gs.get = function () {
 
-				//set the new value. this only matters if the setter set it 
-				this[pprop] = this._value;
+                return this._value;
 
-			}
+            }
+        }
 
-		};
+        if (!gs.set) {
 
-	},
+            gs.set = function (value) {
+
+                this._value = value;
+
+            }
+
+        }
+
+
+        return function (value) {
+
+            //getter
+            if (!arguments.length) {
+
+                this._value = this[pprop];
+                var ret     = gs.get.apply(this);
+
+                delete this._value;
+                return ret;
+
+            //setter
+            } else {
+
+                //don't call the gs if the value isn't the same
+                if (this[pprop] == value) return;
+
+                //set the current value to the setter value
+                this._value = this[pprop];
+
+                //set
+                gs.set.apply(this, [value]);
+
+                //set the new value. this only matters if the setter set it 
+                this[pprop] = this._value;
+
+            }
+
+        };
+
+    },
 
     /**
      * implicit getter
- 	 */
+     */
 
-	_implicit: function (that, property, egs) {
+    _implicit: function (that, property, egs) {
 
-		//keep the original function available so we can override it
-		that.__private[property] = egs;
+        //keep the original function available so we can override it
+        that.__private[property] = egs;
 
-		that.__defineGetter__(property, egs);
-		that.__defineSetter__(property, egs);
+        that.__defineGetter__(property, egs);
+        that.__defineSetter__(property, egs);
 
-	},
-	
-	/**
-	 */
-	
-	_overload: function (that, property, value, nArgs) {  
+    },
+    
+    /**
+     */
+    
+    _overload: function (that, property, value, nArgs) {  
 
-		var funcsByNArgs = Structr.setOverloadedMethod(that, property, value, nArgs);
-				
-		var multiFunc = function() {   
+        var funcsByNArgs = Structr.setOverloadedMethod(that, property, value, nArgs);
+                
+        var multiFunc = function() {   
 
-			var func = funcsByNArgs[arguments.length];
-			
-			if(func) {
+            var func = funcsByNArgs[arguments.length];
+            
+            if(func) {
 
-				return funcsByNArgs[arguments.length].apply(this, arguments);
+                return funcsByNArgs[arguments.length].apply(this, arguments);
 
-			} else {
+            } else {
 
-				var expected = [];
-				
-				for(var sizes in funcsByNArgs) {
+                var expected = [];
+                
+                for(var sizes in funcsByNArgs) {
 
-					expected.push(sizes);
+                    expected.push(sizes);
 
-				}
-				
-				throw new Error('Expected '+expected.join(',')+' parameters, got '+arguments.length+'.');
-			}
+                }
+                
+                throw new Error('Expected '+expected.join(',')+' parameters, got '+arguments.length+'.');
+            }
 
-		}    
-		
-		multiFunc.overloaded = true;                                          
-		
-		return multiFunc; 
-	},
+        }    
+        
+        multiFunc.overloaded = true;                                          
+        
+        return multiFunc; 
+    },
 
-	/**
-	 */
+    /**
+     */
 
-	_abstract: function(that, property, value) {
+    _abstract: function(that, property, value) {
 
-		var ret = function() {
-			throw new Error("\"" + property + "\" is abstract and must be overridden.")
-		};
+        var ret = function() {
+            throw new Error("\"" + property + "\" is abstract and must be overridden.")
+        };
 
-		ret.isAbstract = true;
+        ret.isAbstract = true;
 
-		return ret;
-	}
+        return ret;
+    }
 }       
 
 
@@ -1028,46 +1012,46 @@ Structr.modifiers =  {
 
 Structr.parseProperty = function(property) {
 
-	var parts = property.split(" ");
+    var parts = property.split(" ");
 
-	var modifiers = [],
-	name      = parts.pop(),
-	metadata  = [];
+    var modifiers = [],
+    name      = parts.pop(),
+    metadata  = [];
 
-	for(var i = 0, n = parts.length; i < n; i++) {
-		var part = parts[i];
+    for(var i = 0, n = parts.length; i < n; i++) {
+        var part = parts[i];
 
-		if(part.substr(0, 1) == "[") {
-			metadata.push(Structr.parseMetadata(part));
-			continue;
-		};
+        if(part.substr(0, 1) == "[") {
+            metadata.push(Structr.parseMetadata(part));
+            continue;
+        };
 
-		modifiers.push(part);
-	}
+        modifiers.push(part);
+    }
 
-	return {
-		name: name,
-		modifiers: modifiers,
-		metadata: metadata
-	}
+    return {
+        name: name,
+        modifiers: modifiers,
+        metadata: metadata
+    }
 }
 
 Structr.parseMetadata = function(metadata) {
-	var parts = metadata.match(/\[(\w+)(\((.*?)\))?\]/),
-	name = String(parts[1]).toLowerCase(),
-	params = parts[2] || "()",
-	paramParts = params.length > 2 ? params.substr(1, params.length - 2).split(",") : [];
+    var parts = metadata.match(/\[(\w+)(\((.*?)\))?\]/),
+    name = String(parts[1]).toLowerCase(),
+    params = parts[2] || "()",
+    paramParts = params.length > 2 ? params.substr(1, params.length - 2).split(",") : [];
 
-	var values = {};
-	for(var i = paramParts.length; i--;) {
-		var paramPart = paramParts[i].split("=");
-		values[paramPart[0]] = paramPart[1] || true;
-	}
+    var values = {};
+    for(var i = paramParts.length; i--;) {
+        var paramPart = paramParts[i].split("=");
+        values[paramPart[0]] = paramPart[1] || true;
+    }
 
-	return {
-		name: name,
-		params: values
-	};
+    return {
+        name: name,
+        params: values
+    };
 }
 
 
@@ -1076,200 +1060,200 @@ Structr.parseMetadata = function(metadata) {
  */
 
 Structr.extend = function () {
-	var from = {},
-	mixins = Array.prototype.slice.call(arguments, 0),
-	to = mixins.pop();
+    var from = {},
+    mixins = Array.prototype.slice.call(arguments, 0),
+    to = mixins.pop();
 
-	if(mixins.length > 1) {
-		for(var i = 0, n = mixins.length; i < n; i++) {
-			var mixin = mixins[i];
-			from = Structr.extend(from, typeof mixin == "function" ? mixin.prototype : mixin);
-		}
-	} else {
-		from = mixins.pop() || from;
-	}
-
-
-	//class? fetch the prototype
-	if(typeof from == 'function') {
+    if(mixins.length > 1) {
+        for(var i = 0, n = mixins.length; i < n; i++) {
+            var mixin = mixins[i];
+            from = Structr.extend(from, typeof mixin == "function" ? mixin.prototype : mixin);
+        }
+    } else {
+        from = mixins.pop() || from;
+    }
 
 
-		var fromConstructor = from;
-
-		//copy the prototype to make sure we don't modify it.
-		from = Structr.copy(from.prototype);
-
-		//next we need to convert the class into something we can handle
-		from.__construct = fromConstructor;
-
-	}
+    //class? fetch the prototype
+    if(typeof from == 'function') {
 
 
+        var fromConstructor = from;
 
-	var that = {
-		__private: {
+        //copy the prototype to make sure we don't modify it.
+        from = Structr.copy(from.prototype);
 
-			//contains modifiers for all properties of object
-			propertyModifiers: { }
-		}
-	};
+        //next we need to convert the class into something we can handle
+        from.__construct = fromConstructor;
 
-
-	Structr.copy(from, that);
-
-	var usedProperties = {},
-	property;
+    }
 
 
-	for(property in to) {
 
-		var value = to[property];
+    var that = {
+        __private: {
 
-		var propModifiersAr = Structr.parseProperty(property), //property is at the end of the modifiers. e.g: override bindable testProperty
-		propertyName = propModifiersAr.name,
-
-		modifierList = that.__private.propertyModifiers[propertyName] || (that.__private.propertyModifiers[propertyName] = []);
-
-		if (propModifiersAr.modifiers.length) {
-
-			var propModifiers = {};
-
-			for(var i = propModifiersAr.modifiers.length; i--;) {
-
-				var modifier = propModifiersAr.modifiers[i];
-
-				propModifiers["_" + propModifiersAr.modifiers[i]] = 1;
-
-				if (modifierList.indexOf(modifier) == -1) {
-
-					modifierList.push(modifier);
-
-				}
-			}      
-			
-			if(propModifiers._merge) {
-
-				value = Structr.copy(from[propertyName], value);
-			}         
-
-			//if explicit, or implicit modifiers are set, then we need an explicit modifier first
-			if (propModifiers._explicit || propModifiers._implicit) {
-
-				value = Structr.modifiers._explicit(that, propertyName, value);
-
-			}
-
-			for(var name in Structr._mixin.operators) {
-				if(propModifiers["_" + name]) {
-					value = Structr._mixin.operators[name](that, propertyName, value);
-
-				}
-			}
-
-			if (propModifiers._override) {
-
-				value = Structr.modifiers._override(that, propertyName, value);
-
-			}
-
-			if (propModifiers._abstract) {
-
-				value = Structr.modifiers._abstract(that, propertyName, value);
-
-			}
-
-			if (propModifiers._implicit) {
-
-				//getter is set, don't continue.
-				Structr.modifiers._implicit(that, propertyName, value);
-				continue;
-
-			}
-
-		}
-
-		for(var j = modifierList.length; j--;) {
-
-			value[modifierList[j]] = true;
-
-		}
+            //contains modifiers for all properties of object
+            propertyModifiers: { }
+        }
+    };
 
 
-		
-		if(usedProperties[propertyName]) {
+    Structr.copy(from, that);
 
-			var oldValue = that[propertyName];
-			
-			//first property will NOT be overloaded, so we need to check it here
-			if(!oldValue.overloaded) Structr.modifiers._overload(that, propertyName, oldValue, undefined);
-			 
-			value = Structr.modifiers._overload(that, propertyName, value, undefined);
-		}	
-		
-		usedProperties[propertyName] = 1;
-
-		that.__private[propertyName] = that[propertyName] = value;
-	}
-
-	
-
-	//if the parent constructor exists, and the child constructor IS the parent constructor, it means
-	//the PARENT constructor was defined, and the  CHILD constructor wasn't, so the parent prop was copied over. We need to create a new function, and 
-	//call the parent constructor when the child is instantiated, otherwise it'll be the same class essentially (setting proto)
-	if (that.__construct && from.__construct && that.__construct == from.__construct) {
-		// console.log(String(from.__construct));
-		// console.log(String(that.__construct));
-		that.__construct = Structr.modifiers._override(that, "__construct", function() {
-
-			this._super.apply(this, arguments);
-
-		});
-
-	} else 
-	if(!that.__construct) {
-
-		that.__construct = function() {};
-
-	}
+    var usedProperties = {},
+    property;
 
 
-	//copy the static methods.
-	for (var property in from.__construct) {
+    for(property in to) {
 
-		//make sure it's static. Don't want copying the prototype over. Also make sure NOT to override any
-		//static methods on the new obj
-		if(from.__construct[property]['static'] && !that[property]) {
+        var value = to[property];
 
-			that.__construct[property] = from.__construct[property];
+        var propModifiersAr = Structr.parseProperty(property), //property is at the end of the modifiers. e.g: override bindable testProperty
+        propertyName = propModifiersAr.name,
 
-		}
-	}
+        modifierList = that.__private.propertyModifiers[propertyName] || (that.__private.propertyModifiers[propertyName] = []);
+
+        if (propModifiersAr.modifiers.length) {
+
+            var propModifiers = {};
+
+            for(var i = propModifiersAr.modifiers.length; i--;) {
+
+                var modifier = propModifiersAr.modifiers[i];
+
+                propModifiers["_" + propModifiersAr.modifiers[i]] = 1;
+
+                if (modifierList.indexOf(modifier) == -1) {
+
+                    modifierList.push(modifier);
+
+                }
+            }      
+            
+            if(propModifiers._merge) {
+
+                value = Structr.copy(from[propertyName], value);
+            }         
+
+            //if explicit, or implicit modifiers are set, then we need an explicit modifier first
+            if (propModifiers._explicit || propModifiers._implicit) {
+
+                value = Structr.modifiers._explicit(that, propertyName, value);
+
+            }
+
+            for(var name in Structr._mixin.operators) {
+                if(propModifiers["_" + name]) {
+                    value = Structr._mixin.operators[name](that, propertyName, value);
+
+                }
+            }
+
+            if (propModifiers._override) {
+
+                value = Structr.modifiers._override(that, propertyName, value);
+
+            }
+
+            if (propModifiers._abstract) {
+
+                value = Structr.modifiers._abstract(that, propertyName, value);
+
+            }
+
+            if (propModifiers._implicit) {
+
+                //getter is set, don't continue.
+                Structr.modifiers._implicit(that, propertyName, value);
+                continue;
+
+            }
+
+        }
+
+        for(var j = modifierList.length; j--;) {
+
+            value[modifierList[j]] = true;
+
+        }
+
+
+        
+        if(usedProperties[propertyName]) {
+
+            var oldValue = that[propertyName];
+            
+            //first property will NOT be overloaded, so we need to check it here
+            if(!oldValue.overloaded) Structr.modifiers._overload(that, propertyName, oldValue, undefined);
+             
+            value = Structr.modifiers._overload(that, propertyName, value, undefined);
+        }   
+        
+        usedProperties[propertyName] = 1;
+
+        that.__private[propertyName] = that[propertyName] = value;
+    }
+
+    
+
+    //if the parent constructor exists, and the child constructor IS the parent constructor, it means
+    //the PARENT constructor was defined, and the  CHILD constructor wasn't, so the parent prop was copied over. We need to create a new function, and 
+    //call the parent constructor when the child is instantiated, otherwise it'll be the same class essentially (setting proto)
+    if (that.__construct && from.__construct && that.__construct == from.__construct) {
+        // console.log(String(from.__construct));
+        // console.log(String(that.__construct));
+        that.__construct = Structr.modifiers._override(that, "__construct", function() {
+
+            this._super.apply(this, arguments);
+
+        });
+
+    } else 
+    if(!that.__construct) {
+
+        that.__construct = function() {};
+
+    }
+
+
+    //copy the static methods.
+    for (var property in from.__construct) {
+
+        //make sure it's static. Don't want copying the prototype over. Also make sure NOT to override any
+        //static methods on the new obj
+        if(from.__construct[property]['static'] && !that[property]) {
+
+            that.__construct[property] = from.__construct[property];
+
+        }
+    }
 
      
-	var propertyName;
-	
-	//apply the static props
-	for (propertyName in that) {
+    var propertyName;
+    
+    //apply the static props
+    for (propertyName in that) {
 
-		var value = that[propertyName];
+        var value = that[propertyName];
 
-		//if the value is static, then tack it onto the constructor
-		if (value && value['static']) {
+        //if the value is static, then tack it onto the constructor
+        if (value && value['static']) {
 
-			that.__construct[propertyName] = value;
-			delete that[propertyName];
+            that.__construct[propertyName] = value;
+            delete that[propertyName];
 
-		} 
+        } 
 
-		if(usedProperties[propertyName]) continue;
+        if(usedProperties[propertyName]) continue;
 
-		if(value.isAbstract) {
-			value(); //will throw an error
-		}
+        if(value.isAbstract) {
+            value(); //will throw an error
+        }
 
-	}
+    }
 
-	return that;
+    return that;
 }
 
 
@@ -1281,15 +1265,15 @@ Structr.extend = function () {
 
 Structr.fh = function (that) {
 
-	if(!that) {
+    if(!that) {
 
-		that = {};
+        that = {};
 
-	}
+    }
 
-	that = Structr.extend({}, that);
+    that = Structr.extend({}, that);
 
-	return Structr.ize(that);
+    return Structr.ize(that);
 }
 
 /**
@@ -1297,36 +1281,36 @@ Structr.fh = function (that) {
 
 Structr.ize = function(that) {
 
-	that.structurized = true;
+    that.structurized = true;
 
-	//deprecated
-	that.getMethod = function (property) {
+    //deprecated
+    that.getMethod = function (property) {
 
-		return Structr.getMethod(this, property);
+        return Structr.getMethod(this, property);
 
-	}
+    }
 
-	that.extend = function () {
+    that.extend = function () {
 
-		return Structr.extend.apply(null, [this].concat(arguments));
+        return Structr.extend.apply(null, [this].concat(arguments));
 
-	}
+    }
 
-	//copy to target object
-	that.copyTo = function (target, lite) {
+    //copy to target object
+    that.copyTo = function (target, lite) {
 
-		Structr.copy(this, target, lite);
+        Structr.copy(this, target, lite);
 
-	}   
+    }   
 
-	//wraps the objects methods so this always points to the right place
-	that.wrap = function(property) {
+    //wraps the objects methods so this always points to the right place
+    that.wrap = function(property) {
 
-		return Structr.wrap(this, property);
+        return Structr.wrap(this, property);
 
-	}
+    }
 
-	return that;
+    return that;
 }
                  
 /**
@@ -1340,22 +1324,22 @@ module.exports = Structr;
 require.define("/lib/views/template.js",function(require,module,exports,__dirname,__filename,process,global){
 module.exports = require("./base").extend({
 
-	/**
-	 */
+    /**
+     */
 
-	"override __construct": function(options) {
-		this._super.apply(this, arguments);
-		this.options = options;
-		this.template = typeof options.template == "function" ? options.template : _.template(this.options.template);
-		this.render();
-	},
+    "override __construct": function(options) {
+        this._super.apply(this, arguments);
+        this.options = options;
+        this.template = typeof options.template == "function" ? options.template : _.template(this.options.template);
+        this.render();
+    },
 
-	/**
-	 */
+    /**
+     */
 
-	"render": function() {
-		this.$el.html(this.template(this.options));
-	}	
+    "render": function() {
+        this.$el.html(this.template(this.options));
+    }   
 });
 });
 
@@ -1364,46 +1348,46 @@ EventEmitter = require("events").EventEmitter;
 
 module.exports = structr(EventEmitter, {
 
-	/**
-	 */
+    /**
+     */
 
-	"__construct": function(options) {
-		this.$el = options.$el;
-		this.parent = options.parent;
-		this.options = options;
-	},
+    "__construct": function(options) {
+        this.$el = options.$el;
+        this.parent = options.parent;
+        this.options = options;
+    },
 
-	/**
-	 */
+    /**
+     */
 
-	"close": function() {
-		this.emit("close");
-		this.dispose();
-		this.$el.remove();
-	},
+    "close": function() {
+        this.emit("close");
+        this.dispose();
+        this.$el.remove();
+    },
 
-	/**
-	 */
+    /**
+     */
 
-	"render": function() {
-		//override me
-	},
+    "render": function() {
+        //override me
+    },
 
-	/**
-	 */
+    /**
+     */
 
-	"display": function() {
+    "display": function() {
 
-	},
+    },
 
-	/**
-	 */
+    /**
+     */
 
-	"dispose": function() {
-		this.emit("dispose");
-		this._events = {};
-		this.$el.find("*").unbind();
-	}
+    "dispose": function() {
+        this.emit("dispose");
+        this._events = {};
+        this.$el.find("*").unbind();
+    }
 });
 });
 
@@ -1600,43 +1584,43 @@ Container    = require("./views/container");
 
 module.exports = structr({
 
-	/**
-	 */
+    /**
+     */
 
-	"__construct": function(builder) {
-		this._builder = builder;
-	},
+    "__construct": function(builder) {
+        this._builder = builder;
+    },
 
-	/**
-	 */
+    /**
+     */
 
-	"display": function(options, onClose) {
+    "display": function(options, onClose) {
 
-		if(typeof options == "string") {
-			options = { message: options };
-		}
+        if(typeof options == "string") {
+            options = { message: options };
+        }
 
-		options.onClose = onClose || function(){};
+        options.onClose = onClose || function(){};
 
-		if(!this._container) {
-			this._container = new Container(this._builder._options);
-			this._container.display();
-			var self = this;
-			this._container.once("close", function() {
-				self._container = null;
-			});
-		}
+        if(!this._container) {
+            this._container = new Container(this._builder.options);
+            this._container.display();
+            var self = this;
+            this._container.once("close", function() {
+                self._container = null;
+            });
+        }
 
-		return this._container.addNotification(structr.copy(this._builder._options, options, {}));
-	},
+        return this._container.addNotification(structr.copy(this._builder.options, options, {}));
+    },
 
 
-	/**
-	 */
+    /**
+     */
 
-	"_createNotification": function(options) {
-		return new Notification(options);
-	}
+    "_createNotification": function(options) {
+        return new Notification(options);
+    }
 });
 });
 
@@ -1644,226 +1628,221 @@ require.define("/lib/views/container.js",function(require,module,exports,__dirna
 
 module.exports = require("./base").extend({
 
-	/**
-	 */
+    /**
+     */
 
-	"override __construct": function(options) {
-		this.max = options.max || 1;
-		this.viewClass = options.viewClass;
-		this._children = [];
-		this._queue = [];
+    "override __construct": function(options) {
+        this.max = options.max || 1;
+        this.viewClass = options.viewClass;
+        this._children = [];
+        this._queue = [];
 
-		var tpl = "<div class=\"bark-bark\" style=\"pointer-events:none;position:fixed;z-index:99999;width:100%;height:100%;top:0px;left:0px;\">" +
-					"<div class=\"bark-modal\" style=\"position:absolute;left:0px;top:0px;pointer-events:auto\"></div>" + 
-					"<div class=\"bark-container\" style=\"pointer-events:auto\"></div>" + 
-				  "</div>";
 
-		options.$el = $(tpl);
+        var tpl = "<div class=\"bark-bark\" style=\"position:fixed;z-index:99999;width:100%;height:100%;top:0px;left:0px;\">" +
+                    "<div class=\"bark-modal\" style=\"position:absolute;left:0px;top:0px;width:100%;height:100%\"></div>" + 
+                    "<div class=\"bark-container\"></div>" + 
+                  "</div>";
 
-		this._super(options);
-		this._id = 0;
-	},
+        options.$el = $(tpl);
 
-	/**
-	 */
+        this._super(options);
+        this._id = 0;
+    },
 
-	"addNotification": function(options) {
-		this._queue.push(options);
-		this._addNextNotification();
-	},
+    /**
+     */
 
-	/**
-	 */
+    "addNotification": function(options) {
+        this._queue.push(options);
+        this._addNextNotification();
+    },
 
-	"display": function() {
-		$(document.body).prepend(this.$el);
-		this.$container = this.$el.find(".bark-container");
-		this.$modal     = this.$el.find(".bark-modal");
+    /**
+     */
 
-		if(this.options.classes.modal) {
-			this.$modal.css({ width: "100%", height: "100%" });
-			this.$modal.addClass(this.options.classes.modal);
-		}
+    "display": function() {
+        $(document.body).append(this.$el);
+        this.$container = this.$el.find(".bark-container");
+        this.$modal     = this.$el.find(".bark-modal");
 
-        if(this.options.classes.container) {
-            this.$container.addClass(this.$el.find(this.options.classes.container));
+        if(this.options.modalClass) {
+            this.$modal.addClass(this.options.modalClass);
+        }
+        this.layout();
+        this.transitionIn();
+    },
+
+    /**
+     */
+
+    "layout": function() {
+
+        var layout = this.options.layout || {},
+        css = {
+            width: layout.width,
+            right: layout.right,
+            bottom: layout.bottom,
+            top: layout.top,
+            left: layout.left,
+            position: "absolute"
+        };
+
+
+        if(layout.center) {
+            css.width = css.width || 300;
+            css["margin-left"] = css["margin-right"] = "auto";
+            css.position = "relative";
         }
 
-		this.layout();
-		this.transitionIn();
-	},
 
-	/**
-	 */
+        this.$container.css(css);
+    },
 
-	"layout": function() {
+    /**
+     */
 
-		var layout = this.options.layout || {},
-		css = {
-			width: layout.width,
-			right: layout.right,
-			bottom: layout.bottom,
-			top: layout.top,
-			left: layout.left,
-			position: "absolute"
-		};
+    "_addNextNotification": function() {
 
+        if(~this.max && this._children.length >= this.max) return;
 
-		if(layout.center) {
-			css.width = css.width || 300;
-			css["margin-left"] = css["margin-right"] = "auto";
-			css.position = "relative";
-		}
+        var options = this._queue.shift();
 
+        //no more notifications? end.
+        if(!options) {
+            if(!this._children.length) {
+                this.transitionOut();
+            }
+            return;
+        }
 
-		this.$container.css(css);
-	},
+        //
+        var id = "bark-notification" + (this._id++),
+        self = this,
 
-	/**
-	 */
+        //note - 
+        $el = $("<div id=\"" + id + "\" class=\"bark-notification\"><div class=\"bark-inner-container\" style=\"position:relative;\"></div></div>");
+        this.$container.append($el);
 
-	"_addNextNotification": function() {
+        options.$el = $el.find(".bark-inner-container");
 
-		if(~this.max && this._children.length >= this.max) return;
-
-		var options = this._queue.shift();
-
-		//no more notifications? end.
-		if(!options) {
-			if(!this._children.length) {
-				this.transitionOut();
-			}
-			return;
-		}
-
-		//
-		var id = "bark-notification" + (this._id++),
-		self = this,
-
-		//note - 
-		$el = $("<div id=\"" + id + "\" class=\"bark-notification\"><div class=\"bark-inner-container\" style=\"position:relative;\"></div></div>");
-		this.$container.append($el);
-
-		options.$el = $el.find(".bark-inner-container");
-
-		if(this.options.classes.notification) {
-			options.$el.addClass(this.options.classes.notification);
-		}
+        if(this.options.notificationClass) {
+            options.$el.addClass(this.options.notificationClass);
+        }
 
 
-		//create a new notification child, and pass the view class
-		var child = new Notification(options);
-		this._children.push(child);
+        //create a new notification child, and pass the view class
+        var child = new Notification(options);
+        this._children.push(child);
 
-		//display it
-		child.render();
+        //display it
+        child.render();
 
-		//on close, show next notification
-		child.once("close", function() {
-			self._children.splice(self._children.indexOf(child), 1);
-			self.emit("removeChild", child);
-			self._addNextNotification();
-		});
-
-
-		this.emit("addChild", child);
-	},
+        //on close, show next notification
+        child.once("close", function() {
+            self._children.splice(self._children.indexOf(child), 1);
+            self.emit("removeChild", child);
+            self._addNextNotification();
+        });
 
 
-	/**
-	 */
+        this.emit("addChild", child);
+    },
 
-	"transitionIn": function() {
-		this.$modal.css({ opacity: 0 }).transit({ opacity: 1 }, 200);
-	},
 
-	/**
-	 */
+    /**
+     */
 
-	"transitionOut": function(cb) {
-		var self = this;
-		this.$modal.transit({ opacity: 0 }, 500, function() {
-			if(cb) cb();
-			self.close();
-		})
-	}
+    "transitionIn": function() {
+        this.$modal.css({ opacity: 0 }).transit({ opacity: 1 }, 200);
+    },
+
+    /**
+     */
+
+    "transitionOut": function(cb) {
+        var self = this;
+        this.$modal.transit({ opacity: 0 }, 500, function() {
+            if(cb) cb();
+            self.close();
+        })
+    }
 
 });
 });
 
 require.define("/lib/views/notification.js",function(require,module,exports,__dirname,__filename,process,global){module.exports = require("./base").extend({
 
-	/**
-	 */
+    /**
+     */
 
-	"override __construct": function(options) {
-		this.view = new options.viewClass(options);
-		this._super.apply(this, arguments);
-	},
+    "override __construct": function(options) {
+        this.view = new options.viewClass(options);
+        this._super.apply(this, arguments);
+    },
 
-	/**
-	 */
+    /**
+     */
 
-	"render": function() {
+    "render": function() {
 
-		this.view.render();
-		this.transitionIn();
+        this.view.render();
+        this.transitionIn();
 
-		var self = this;
+        var self = this;
 
-		//find all the close buttons - there maybe multiple
-		this.$el.find(".close").one("click", function() {
+        //find all the close buttons - there maybe multiple
+        this.$el.find(".close").one("click", function() {
 
-			//this chunk allows for the detection of a particular button
-			var ev = {},
-			name = $(this).attr("data-name");
-			if(name) ev[name] = true;
+            //this chunk allows for the detection of a particular button
+            var ev = {},
+            name = $(this).attr("data-name");
+            if(name) ev[name] = true;
 
-			self.transitionOut(function() {
-				self.options.onClose(ev);
-			});
-		});
-
-
-		//timeout active? probably a growl-like notification
-		if(this.options.closeAfterTime) {
-			setTimeout(function() {
-				self.transitionOut();
-			}, this.options.closeAfterTime);
-		}
-	},
+            self.transitionOut(function() {
+                self.options.onClose(ev);
+            });
+        });
 
 
-	/**
-	 */
-
-	"transitionIn": function(cb) {
-		if(!this.options.transitionIn) return;
-
-		var tin = this.options.transitionIn;
-		
-		this.$el.
-		css(tin.from).
-		transition(tin.to, tin.easing.duration, tin.easing.type, cb);
-	},
+        //timeout active? probably a growl-like notification
+        if(this.options.closeAfterTime) {
+            setTimeout(function() {
+                self.transitionOut();
+            }, this.options.closeAfterTime);
+        }
+    },
 
 
-	/**
-	 */
+    /**
+     */
 
-	"transitionOut": function(cb) {
-		if(!this.options.transitionOut) return;
-		var tout = this.options.transitionOut,
-		$el = this.$el,
-		self = this;
+    "transitionIn": function(cb) {
+        if(!this.options.transitionIn) return;
 
-		$el.
-		css(tout.from).
-		transition(tout.to, tout.easing.duration || 200, tout.easing.type, function() {
-			if(cb) cb();
-			self.close();
-		});
-	}
+        var tin = this.options.transitionIn;
+        
+        this.$el.
+        css(tin.from).
+        transition(tin.to, tin.easing.duration, tin.easing.type, cb);
+    },
+
+
+    /**
+     */
+
+    "transitionOut": function(cb) {
+        if(!this.options.transitionOut) return;
+        var tout = this.options.transitionOut,
+        $el = this.$el,
+        self = this;
+
+        $el.
+        css(tout.from).
+        transition(tout.to, tout.easing.duration || 200, tout.easing.type, function() {
+            if(cb) cb();
+            self.close();
+        });
+    }
 
 });
 });
