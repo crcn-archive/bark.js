@@ -478,6 +478,14 @@ var NotificationBuilder = module.exports = structr({
 	/**
 	 */
 
+	"closable": function(value) {
+		this._options.closable = value === false;
+		return this;
+	},
+
+	/**
+	 */
+
 	"options": function (options) {
 		this._options = structr.copy(options, this._options);
 		return this;
@@ -489,6 +497,7 @@ var NotificationBuilder = module.exports = structr({
 	"reset": function (options) {
 		this._options = options || {};
 		if (!this._options.max) this._options.max = 1;
+		if(this._options.closable !== false) this._options.closable = true;
 		return this;
 	},
 
@@ -1824,12 +1833,11 @@ module.exports = require("./base").extend({
     /**
      */
 
-    "transitionOut": function (cb) {
+    "transitionOut": function () {
         var self = this;
         this.$modal.transit({
             opacity: 0
         }, 500, function () {
-            if (cb) cb();
             self.close();
         })
     }
@@ -1866,7 +1874,7 @@ require.define("/lib/views/notification.js",function(require,module,exports,__di
 			name = $(this).attr("data-name");
 			if(name) ev[name] = true;
 			self.event = ev;
-			
+
 			self.transitionOut();
 
 		});
@@ -1884,20 +1892,20 @@ require.define("/lib/views/notification.js",function(require,module,exports,__di
 	/**
 	 */
 
-	"transitionIn": function(cb) {
-		if(!this.options.transitionIn) return cb();
+	"transitionIn": function() {
+		if(!this.options.transitionIn) return;
 
 		var tin = this.options.transitionIn;
 		
 		this.$el.
 		css(tin.from).
-		transition(tin.to, tin.easing.duration, tin.easing.type, cb);
+		transition(tin.to, tin.easing.duration, tin.easing.type);
 	},
 
 	/**
 	 */
 
-	"transitionOut": function(cb) {
+	"transitionOut": function(force) {
 
 		var self = this;
 
@@ -1905,9 +1913,10 @@ require.define("/lib/views/notification.js",function(require,module,exports,__di
 		self.options.onClose(this.event || {});
 
 		function onClose() {
-			if(cb) cb();
 			self.close();
 		}
+
+		if(!self.options.closable && !force) return;
 
 		if(!this.options.transitionOut) return onClose();
 
