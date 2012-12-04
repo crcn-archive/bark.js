@@ -570,6 +570,13 @@ var NotificationBuilder = module.exports = structr({
 		return this;
 	},
 
+	/**
+	 */
+
+	"on": function(type, callback) {
+		this._manager.on(type, callback);
+		return this;
+	},
 
 	/**
 	 */
@@ -603,6 +610,16 @@ var NotificationBuilder = module.exports = structr({
 			easing: easing || {}
 		};
 		return this;
+	},
+
+	/**
+	 */
+
+	"wrap": function() {
+		var self = this;
+		return function(options, onClose) {
+			return self.display(options, onClose);
+		}
 	},
 
 	/**
@@ -1596,7 +1613,8 @@ EventEmitter.prototype.listeners = function(type) {
 });
 
 require.define("/lib/manager.js",function(require,module,exports,__dirname,__filename,process,global){var structr = require("structr"),
-Container    = require("./views/container");
+Container    = require("./views/container"),
+EventEmitter = require("events").EventEmitter;
 
 
 
@@ -1605,7 +1623,7 @@ Container    = require("./views/container");
  */
 
 
-module.exports = structr({
+module.exports = structr(EventEmitter, {
 
 	/**
 	 */
@@ -1632,6 +1650,16 @@ module.exports = structr({
 			this._container.once("close", function() {
 				self._container = null;
 			});
+
+			this._container.on("addChild", function(child) {
+				self.emit("openNotification", child);
+			});
+
+			this._container.on("removeChild", function(child) {
+				self.emit("closeNotification", child);
+			});
+
+
 		}
 
 		return this._container.addNotification(structr.copy(this._builder._options, options, {}));
@@ -1720,8 +1748,9 @@ module.exports = require("./base").extend({
 
 
         if (layout.center) {
-            css.width = css.width || 300;
+            // css.width = css.width || 300;
             css["margin-left"] = css["margin-right"] = "auto";
+            // css["margin"] = "0px auto";
             css.position = "relative";
         }
 
@@ -1813,6 +1842,7 @@ require.define("/lib/views/notification.js",function(require,module,exports,__di
 	 */
 
 	"override __construct": function(options) {
+		options.notification = this;
 		this.view = new options.viewClass(options);
 		this._super.apply(this, arguments);
 	},
@@ -1834,10 +1864,10 @@ require.define("/lib/views/notification.js",function(require,module,exports,__di
 			var ev = {},
 			name = $(this).attr("data-name");
 			if(name) ev[name] = true;
+			self.event = ev;
+			
+			self.transitionOut();
 
-			self.transitionOut(function() {
-				self.options.onClose(ev);
-			});
 		});
 
 
@@ -1854,7 +1884,7 @@ require.define("/lib/views/notification.js",function(require,module,exports,__di
 	 */
 
 	"transitionIn": function(cb) {
-		if(!this.options.transitionIn) return;
+		if(!this.options.transitionIn) return cb();
 
 		var tin = this.options.transitionIn;
 		
@@ -1863,22 +1893,29 @@ require.define("/lib/views/notification.js",function(require,module,exports,__di
 		transition(tin.to, tin.easing.duration, tin.easing.type, cb);
 	},
 
-
 	/**
 	 */
 
 	"transitionOut": function(cb) {
-		if(!this.options.transitionOut) return;
+
+		var self = this;
+
+		//bypass security restrictions
+		self.options.onClose(this.event || {});
+
+		function onClose() {
+			if(cb) cb();
+			self.close();
+		}
+
+		if(!this.options.transitionOut) return onClose();
+
 		var tout = this.options.transitionOut,
-		$el = this.$el,
-		self = this;
+		$el = this.$el;
 
 		$el.
 		css(tout.from).
-		transition(tout.to, tout.easing.duration || 200, tout.easing.type, function() {
-			if(cb) cb();
-			self.close();
-		});
+		transition(tout.to, tout.easing.duration || 200, tout.easing.type, onClose);
 	}
 
 });
@@ -1887,13 +1924,17 @@ require.define("/lib/views/notification.js",function(require,module,exports,__di
 require.define("/lib/index.js",function(require,module,exports,__dirname,__filename,process,global){var Bark = require("./bark"),
 bark = new Bark();
 
+function init() {
+	return new Bark();
+}
+
 
 if(typeof window !== "undefined") {
-  window.Bark = bark;
+  window.Bark = init;
 }
 
 if(typeof module.exports !== "undefined") {
-  module.exports = bark;
+  module.exports = init;
 }
 
 });

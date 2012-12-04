@@ -446,6 +446,7 @@ module.exports = structr({
 
 		this[name] = function (options, onClose) {
 			self.notification(name).display(options, onClose);
+			return self; //ability to chain.
 		}
 	}
 });
@@ -455,50 +456,48 @@ require.define("/lib/notificationBuilder.js",function(require,module,exports,__d
 TemplateView = require("./views/template"),
 NotificationManager = require("./manager");
 
-
 var NotificationBuilder = module.exports = structr({
 
 	/**
 	 * existing options form an inherited notification
 	 */
 
-	"__construct": function(inheritFrom) {
-		this.options = structr.copy(inheritFrom ? inheritFrom.options : {});
+	"__construct": function (inheritFrom) {
+		this.reset(structr.copy(inheritFrom ? inheritFrom._options : {}))
 		this._manager = new NotificationManager(this);
-
-		if(!this.options.max) this.options.max = 1;
 	},
 
 	/**
 	 */
 
-	"defaults": function(options) {
-		this.options = structr.copy(this.options, options);
+	"defaults": function (options) {
+		this._options = structr.copy(this._options, options);
 		return this;
 	},
 
 	/**
 	 */
 
-	"reset": function(options) {
-		this.options = options || {};
+	"options": function (options) {
+		this._options = structr.copy(options, this._options);
+		return this;
+	},
+
+	/**
+	 */
+
+	"reset": function (options) {
+		this._options = options || {};
+		if (!this._options.max) this._options.max = 1;
+		return this;
 	},
 
 	/**
 	 * close the notification after this time
 	 */
 
-	"closeAfterTime": function(value) {
-		this.options.closeAfterTime = value;
-		return this;
-	},
-
-	/**
-	 * position: left, right, top, bottom
-	 */
-
-	"position": function(options) {
-		this.options.position = options;
+	"closeAfterTime": function (value) {
+		this._options.closeAfterTime = value;
 		return this;
 	},
 
@@ -506,8 +505,8 @@ var NotificationBuilder = module.exports = structr({
 	 * max number of notifications to show at one time
 	 */
 
-	"max": function(value) {
-		this.options.max = value;
+	"max": function (value) {
+		this._options.max = value;
 		return this;
 	},
 
@@ -515,8 +514,8 @@ var NotificationBuilder = module.exports = structr({
 	 * layout information for the notification: vertical, horizontal
 	 */
 
-	"layout": function(value) {
-		this.options.layout = value;
+	"layout": function (value) {
+		this._options.layout = value;
 		return this;
 	},
 
@@ -524,8 +523,9 @@ var NotificationBuilder = module.exports = structr({
 	 * the backbone view class for the notification
 	 */
 
-	"viewClass": function(viewClass) {
-		this.options.viewClass = viewClass;
+	"view": function (view) {
+		this._options.viewClass = view;
+		return this;
 	},
 
 
@@ -533,34 +533,69 @@ var NotificationBuilder = module.exports = structr({
 	 * css class name for the modal
 	 */
 
-	"modalClass": function(className) {
-		this.options.modalClass = className;
-		return this;
+	"modalClass": function (className) {
+		return this.setClass("modal", className);
+	},
+
+	/**
+	 */
+
+	"containerClass": function (className) {
+		return this.setClass("container", className);
 	},
 
 	/**
 	 * css class name for the notification
 	 */
 
-	"notificationClass": function(className) {
-		this.options.notificationClass = className;
+	"notificationClass": function (className) {
+		return this.setClass("container", className);
+	},
+
+	/**
+	 */
+
+	"classes": function (options) {
+		this._options.classes = options || {};
 		return this;
 	},
 
 	/**
 	 */
 
-	"template": function(element) {
-		this.options.template = element;
-		return this.viewClass(TemplateView);
+
+	"setClass": function (name, className) {
+		if (!this._options.classes) this._options.classes = {};
+		this._options.classes[name] = className;
+		return this;
+	},
+
+	/**
+	 */
+
+	"on": function(type, callback) {
+		this._manager.on(type, callback);
+		return this;
+	},
+
+	/**
+	 */
+
+	"template": function (element) {
+		this._options.template = element;
+		return this.view(TemplateView);
 	},
 
 	/**
 	 * transition in styles
 	 */
 
-	"transitionIn": function(from, to, easing) {
-		this.options.transitionIn = { from: from || {}, to: to || {}, easing: easing || {} };
+	"transitionIn": function (from, to, easing) {
+		this._options.transitionIn = {
+			from: from || {},
+			to: to || {},
+			easing: easing || {}
+		};
 		return this;
 	},
 
@@ -568,22 +603,36 @@ var NotificationBuilder = module.exports = structr({
 	 * transition out styles
 	 */
 
-	"transitionOut": function(from, to, easing) {
-		this.options.transitionOut = { from: from || {}, to: to || {}, easing: easing || {} };
+	"transitionOut": function (from, to, easing) {
+		this._options.transitionOut = {
+			from: from || {},
+			to: to || {},
+			easing: easing || {}
+		};
 		return this;
 	},
 
 	/**
 	 */
 
-	"display": function(options, onClose) {
+	"wrap": function() {
+		var self = this;
+		return function(options, onClose) {
+			return self.display(options, onClose);
+		}
+	},
+
+	/**
+	 */
+
+	"display": function (options, onClose) {
 		this._manager.display(options, onClose);
 	},
 
 	/**
 	 */
 
-	"clone": function() {
+	"clone": function () {
 		return new NotificationBuilder(this);
 	}
 });
@@ -1564,7 +1613,8 @@ EventEmitter.prototype.listeners = function(type) {
 });
 
 require.define("/lib/manager.js",function(require,module,exports,__dirname,__filename,process,global){var structr = require("structr"),
-Container    = require("./views/container");
+Container    = require("./views/container"),
+EventEmitter = require("events").EventEmitter;
 
 
 
@@ -1573,7 +1623,7 @@ Container    = require("./views/container");
  */
 
 
-module.exports = structr({
+module.exports = structr(EventEmitter, {
 
 	/**
 	 */
@@ -1594,15 +1644,25 @@ module.exports = structr({
 		options.onClose = onClose || function(){};
 
 		if(!this._container) {
-			this._container = new Container(this._builder.options);
+			this._container = new Container(this._builder._options);
 			this._container.display();
 			var self = this;
 			this._container.once("close", function() {
 				self._container = null;
 			});
+
+			this._container.on("addChild", function(child) {
+				self.emit("openNotification", child);
+			});
+
+			this._container.on("removeChild", function(child) {
+				self.emit("closeNotification", child);
+			});
+
+
 		}
 
-		return this._container.addNotification(structr.copy(this._builder.options, options, {}));
+		return this._container.addNotification(structr.copy(this._builder._options, options, {}));
 	},
 
 
@@ -1619,144 +1679,159 @@ require.define("/lib/views/container.js",function(require,module,exports,__dirna
 
 module.exports = require("./base").extend({
 
-	/**
-	 */
+    /**
+     */
 
-	"override __construct": function(options) {
-		this.max = options.max || 1;
-		this.viewClass = options.viewClass;
-		this._children = [];
-		this._queue = [];
+    "override __construct": function (options) {
+        this.max = options.max || 1;
+        this.viewClass = options.viewClass;
+        this._children = [];
+        this._queue = [];
 
+        var tpl = "<div class=\"bark-bark\" style=\"pointer-events:none;position:fixed;z-index:99999;width:100%;height:100%;top:0px;left:0px;\">" +
+            "<div class=\"bark-modal\" style=\"position:absolute;left:0px;top:0px;pointer-events:auto\"></div>" +
+            "<div class=\"bark-container\" style=\"pointer-events:auto\"></div>" +
+            "</div>";
 
-		var tpl = "<div class=\"bark-bark\" style=\"position:fixed;z-index:99999;width:100%;height:100%;top:0px;left:0px;\">" +
-					"<div class=\"bark-modal\" style=\"position:absolute;left:0px;top:0px;width:100%;height:100%\"></div>" + 
-					"<div class=\"bark-container\"></div>" + 
-				  "</div>";
+        options.$el = $(tpl);
 
-		options.$el = $(tpl);
+        this._super(options);
+        this._id = 0;
+    },
 
-		this._super(options);
-		this._id = 0;
-	},
+    /**
+     */
 
-	/**
-	 */
+    "addNotification": function (options) {
+        this._queue.push(options);
+        this._addNextNotification();
+    },
 
-	"addNotification": function(options) {
-		this._queue.push(options);
-		this._addNextNotification();
-	},
+    /**
+     */
 
-	/**
-	 */
+    "display": function () {
+        $(document.body).prepend(this.$el);
+        this.$container = this.$el.find(".bark-container");
+        this.$modal = this.$el.find(".bark-modal");
 
-	"display": function() {
-		$(document.body).append(this.$el);
-		this.$container = this.$el.find(".bark-container");
-		this.$modal     = this.$el.find(".bark-modal");
+        if (this.options.classes.modal) {
+            this.$modal.css({
+                width: "100%",
+                height: "100%"
+            }).
+            addClass(this.options.classes.modal);
+        }
 
-		if(this.options.modalClass) {
-			this.$modal.addClass(this.options.modalClass);
-		}
-		this.layout();
-		this.transitionIn();
-	},
+        if (this.options.classes.container) {
+            this.$container.addClass(this.options.classes.container);
+        }
 
-	/**
-	 */
+        this.layout();
+        this.transitionIn();
+    },
 
-	"layout": function() {
+    /**
+     */
 
-		var layout = this.options.layout || {},
-		css = {
-			width: layout.width,
-			right: layout.right,
-			bottom: layout.bottom,
-			top: layout.top,
-			left: layout.left,
-			position: "absolute"
-		};
+    "layout": function () {
 
-
-		if(layout.center) {
-			css.width = css.width || 300;
-			css["margin-left"] = css["margin-right"] = "auto";
-			css.position = "relative";
-		}
-
-
-		this.$container.css(css);
-	},
-
-	/**
-	 */
-
-	"_addNextNotification": function() {
-
-		if(~this.max && this._children.length >= this.max) return;
-
-		var options = this._queue.shift();
-
-		//no more notifications? end.
-		if(!options) {
-			if(!this._children.length) {
-				this.transitionOut();
-			}
-			return;
-		}
-
-		//
-		var id = "bark-notification" + (this._id++),
-		self = this,
-
-		//note - 
-		$el = $("<div id=\"" + id + "\" class=\"bark-notification\"><div class=\"bark-inner-container\" style=\"position:relative;\"></div></div>");
-		this.$container.append($el);
-
-		options.$el = $el.find(".bark-inner-container");
-
-		if(this.options.notificationClass) {
-			options.$el.addClass(this.options.notificationClass);
-		}
+        var layout = this.options.layout || {},
+        css = {
+            width: layout.width,
+            right: layout.right,
+            bottom: layout.bottom,
+            top: layout.top,
+            left: layout.left,
+            position: "absolute"
+        };
 
 
-		//create a new notification child, and pass the view class
-		var child = new Notification(options);
-		this._children.push(child);
-
-		//display it
-		child.render();
-
-		//on close, show next notification
-		child.once("close", function() {
-			self._children.splice(self._children.indexOf(child), 1);
-			self.emit("removeChild", child);
-			self._addNextNotification();
-		});
+        if (layout.center) {
+            // css.width = css.width || 300;
+            css["margin-left"] = css["margin-right"] = "auto";
+            // css["margin"] = "0px auto";
+            css.position = "relative";
+        }
 
 
-		this.emit("addChild", child);
-	},
+        this.$container.css(css);
+    },
+
+    /**
+     */
+
+    "_addNextNotification": function () {
+
+        if (~this.max && this._children.length >= this.max) return;
+
+        var options = this._queue.shift();
+
+        //no more notifications? end.
+        if (!options) {
+            if (!this._children.length) {
+                this.transitionOut();
+            }
+            return;
+        }
+
+        //
+        var id = "bark-notification" + (this._id++),
+            self = this,
+
+            //note - 
+            $el = $("<div id=\"" + id + "\" class=\"bark-notification\"><div class=\"bark-inner-container\" style=\"position:relative;\"></div></div>");
+        this.$container.append($el);
+
+        options.$el = $el.find(".bark-inner-container");
+
+        if (this.options.classes.notification) {
+            options.$el.addClass(this.options.classes.notification);
+        }
 
 
-	/**
-	 */
+        //create a new notification child, and pass the view class
+        var child = new Notification(options);
+        this._children.push(child);
 
-	"transitionIn": function() {
-		this.$modal.css({ opacity: 0 }).transit({ opacity: 1 }, 200);
-	},
+        //display it
+        child.render();
 
-	/**
-	 */
+        //on close, show next notification
+        child.once("close", function () {
+            self._children.splice(self._children.indexOf(child), 1);
+            self.emit("removeChild", child);
+            self._addNextNotification();
+        });
 
-	"transitionOut": function(cb) {
-		var self = this;
-		this.$modal.transit({ opacity: 0 }, 500, function() {
-			if(cb) cb();
-			self.close();
-		})
-	}
+
+        this.emit("addChild", child);
+    },
+
+
+    /**
+     */
+
+    "transitionIn": function () {
+        this.$modal.css({
+            opacity: 0
+        }).transit({
+            opacity: 1
+        }, 200);
+    },
+
+    /**
+     */
+
+    "transitionOut": function (cb) {
+        var self = this;
+        this.$modal.transit({
+            opacity: 0
+        }, 500, function () {
+            if (cb) cb();
+            self.close();
+        })
+    }
 
 });
 });
@@ -1767,6 +1842,7 @@ require.define("/lib/views/notification.js",function(require,module,exports,__di
 	 */
 
 	"override __construct": function(options) {
+		options.notification = this;
 		this.view = new options.viewClass(options);
 		this._super.apply(this, arguments);
 	},
@@ -1789,9 +1865,8 @@ require.define("/lib/views/notification.js",function(require,module,exports,__di
 			name = $(this).attr("data-name");
 			if(name) ev[name] = true;
 
-			self.transitionOut(function() {
-				self.options.onClose(ev);
-			});
+			self.transitionOut();
+
 		});
 
 
@@ -1808,7 +1883,7 @@ require.define("/lib/views/notification.js",function(require,module,exports,__di
 	 */
 
 	"transitionIn": function(cb) {
-		if(!this.options.transitionIn) return;
+		if(!this.options.transitionIn) return cb();
 
 		var tin = this.options.transitionIn;
 		
@@ -1817,22 +1892,29 @@ require.define("/lib/views/notification.js",function(require,module,exports,__di
 		transition(tin.to, tin.easing.duration, tin.easing.type, cb);
 	},
 
-
 	/**
 	 */
 
 	"transitionOut": function(cb) {
-		if(!this.options.transitionOut) return;
+
+		var self = this;
+		
+		//bypass security restrictions
+		self.options.onClose(ev);
+
+		function onClose() {
+			if(cb) cb();
+			self.close();
+		}
+
+		if(!this.options.transitionOut) return onClose();
+
 		var tout = this.options.transitionOut,
-		$el = this.$el,
-		self = this;
+		$el = this.$el;
 
 		$el.
 		css(tout.from).
-		transition(tout.to, tout.easing.duration || 200, tout.easing.type, function() {
-			if(cb) cb();
-			self.close();
-		});
+		transition(tout.to, tout.easing.duration || 200, tout.easing.type, onClose);
 	}
 
 });
@@ -1841,16 +1923,19 @@ require.define("/lib/views/notification.js",function(require,module,exports,__di
 require.define("/lib/index.js",function(require,module,exports,__dirname,__filename,process,global){var Bark = require("./bark"),
 bark = new Bark();
 
+function init() {
+	return new Bark();
+}
+
 
 if(typeof window !== "undefined") {
-  window.Bark = bark;
+  window.Bark = init;
 }
 
 if(typeof module.exports !== "undefined") {
-  module.exports = bark;
+  module.exports = init;
 }
 
-console.log("RED")
 });
 require("/lib/index.js");
 })();
