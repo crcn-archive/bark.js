@@ -1672,6 +1672,7 @@ module.exports = structr(EventEmitter, {
 		var ops = structr.copy(this._builder._options);
 		ops = structr.copy(options, ops);
 
+
 		return this._container.addNotification(ops);
 	},
 
