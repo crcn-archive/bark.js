@@ -1868,7 +1868,7 @@ require.define("/lib/views/notification.js",function(require,module,exports,__di
 		var self = this;
 
 		//find all the close buttons - there maybe multiple
-		this.$el.find(".close").one("click", function() {
+		this.$el.find("[data-rel='close'],[rel='close'],.close").one("click", function() {
 
 			//this chunk allows for the detection of a particular button
 			var ev = {},
