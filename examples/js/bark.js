@@ -478,6 +478,14 @@ var NotificationBuilder = module.exports = structr({
 	/**
 	 */
 
+	"closable": function(value) {
+		this._options.closable = value === false;
+		return this;
+	},
+
+	/**
+	 */
+
 	"options": function (options) {
 		this._options = structr.copy(options, this._options);
 		return this;
@@ -489,6 +497,7 @@ var NotificationBuilder = module.exports = structr({
 	"reset": function (options) {
 		this._options = options || {};
 		if (!this._options.max) this._options.max = 1;
+		if(this._options.closable !== false) this._options.closable = true;
 		return this;
 	},
 
@@ -1658,11 +1667,13 @@ module.exports = structr(EventEmitter, {
 			this._container.on("removeChild", function(child) {
 				self.emit("closeNotification", child);
 			});
-
-
 		}
 
-		return this._container.addNotification(structr.copy(this._builder._options, options, {}));
+		var ops = structr.copy(this._builder._options);
+		ops = structr.copy(options, ops);
+
+
+		return this._container.addNotification(ops);
 	},
 
 
@@ -1738,7 +1749,6 @@ module.exports = require("./base").extend({
 
         var layout = this.options.layout || {},
         css = {
-            width: layout.width,
             right: layout.right,
             bottom: layout.bottom,
             top: layout.top,
@@ -1749,9 +1759,10 @@ module.exports = require("./base").extend({
 
         if (layout.center) {
             // css.width = css.width || 300;
-            css["margin-left"] = css["margin-right"] = "auto";
+           // css["margin-left"] = css["margin-right"] = "auto";
             // css["margin"] = "0px auto";
             css.position = "relative";
+            css["text-align"] = "center";
         }
 
 
@@ -1780,7 +1791,7 @@ module.exports = require("./base").extend({
             self = this,
 
             //note - 
-            $el = $("<div id=\"" + id + "\" class=\"bark-notification\"><div class=\"bark-inner-container\" style=\"position:relative;\"></div></div>");
+            $el = $("<div id=\"" + id + "\" class=\"bark-notification\" style=\"display:inline-block;min-width:"+this.options.layout.width+"px\"><div class=\"bark-inner-container\" style=\"position:relative;\"></div></div>");
         this.$container.append($el);
 
         options.$el = $el.find(".bark-inner-container");
@@ -1823,12 +1834,11 @@ module.exports = require("./base").extend({
     /**
      */
 
-    "transitionOut": function (cb) {
+    "transitionOut": function () {
         var self = this;
         this.$modal.transit({
             opacity: 0
         }, 500, function () {
-            if (cb) cb();
             self.close();
         })
     }
@@ -1858,12 +1868,13 @@ require.define("/lib/views/notification.js",function(require,module,exports,__di
 		var self = this;
 
 		//find all the close buttons - there maybe multiple
-		this.$el.find(".close").one("click", function() {
+		this.$el.find("[data-rel='close'],[rel='close'],.close").one("click", function() {
 
 			//this chunk allows for the detection of a particular button
 			var ev = {},
 			name = $(this).attr("data-name");
 			if(name) ev[name] = true;
+			self.event = ev;
 
 			self.transitionOut();
 
@@ -1882,30 +1893,34 @@ require.define("/lib/views/notification.js",function(require,module,exports,__di
 	/**
 	 */
 
-	"transitionIn": function(cb) {
-		if(!this.options.transitionIn) return cb();
+	"transitionIn": function() {
+		if(!this.options.transitionIn) return;
 
 		var tin = this.options.transitionIn;
 		
 		this.$el.
 		css(tin.from).
-		transition(tin.to, tin.easing.duration, tin.easing.type, cb);
+		transition(tin.to, tin.easing.duration, tin.easing.type);
 	},
 
 	/**
 	 */
 
-	"transitionOut": function(cb) {
+	"transitionOut": function(force) {
+
+		if(this._closing) return;
+		this._closing = true;
 
 		var self = this;
-		
+
 		//bypass security restrictions
-		self.options.onClose(ev);
+		self.options.onClose(this.event || {});
 
 		function onClose() {
-			if(cb) cb();
 			self.close();
 		}
+
+		if(!self.options.closable && !force) return;
 
 		if(!this.options.transitionOut) return onClose();
 

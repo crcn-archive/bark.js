@@ -1749,7 +1749,6 @@ module.exports = require("./base").extend({
 
         var layout = this.options.layout || {},
         css = {
-            width: layout.width,
             right: layout.right,
             bottom: layout.bottom,
             top: layout.top,
@@ -1760,9 +1759,10 @@ module.exports = require("./base").extend({
 
         if (layout.center) {
             // css.width = css.width || 300;
-            css["margin-left"] = css["margin-right"] = "auto";
+           // css["margin-left"] = css["margin-right"] = "auto";
             // css["margin"] = "0px auto";
             css.position = "relative";
+            css["text-align"] = "center";
         }
 
 
@@ -1791,7 +1791,7 @@ module.exports = require("./base").extend({
             self = this,
 
             //note - 
-            $el = $("<div id=\"" + id + "\" class=\"bark-notification\"><div class=\"bark-inner-container\" style=\"position:relative;\"></div></div>");
+            $el = $("<div id=\"" + id + "\" class=\"bark-notification\" style=\"display:inline-block;min-width:"+this.options.layout.width+"px\"><div class=\"bark-inner-container\" style=\"position:relative;\"></div></div>");
         this.$container.append($el);
 
         options.$el = $el.find(".bark-inner-container");
@@ -1907,6 +1907,9 @@ require.define("/lib/views/notification.js",function(require,module,exports,__di
 	 */
 
 	"transitionOut": function(force) {
+
+		if(this._closing) return;
+		this._closing = true;
 
 		var self = this;
 
