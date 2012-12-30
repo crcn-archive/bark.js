@@ -1,20 +1,22 @@
-Bark.
+var bark = Bark();
+
+bark.
 register("confirm").
 classes({ modal: "alert-modal", alert: "alert" }).
 options({ ok: "Yes!", cancel: "No" }).
-layout({ center: true, top: 100 }).
+layout({ center: true, top: 100, width: 200 }).
 transitionIn({ rotateX: -90, opacity: 0 }, { rotateX: 0, opacity: 1 }).
 transitionOut({ }, { opacity: 0, scale: 1.25 }).
 template(templateHtml);
 
-Bark.
+bark.
 register("alert", "confirm").
-options({ cancel: undefined });
+options({ cancel: undefined, ok: "OK" });
 
-Bark.confirm("Do you like Bark.js?", function(ev) {
+bark.confirm("Do you like Bark.js?", function(ev) {
   if(ev.ok) {
-    Bark.alert("sweet!");
+    bark.alert("sweet!");
   } else {
-    Bark.alert("I guess that's okay...")
+    bark.alert("I guess that's okay...")
   }
 });

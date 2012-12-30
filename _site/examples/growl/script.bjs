@@ -1,4 +1,6 @@
-Bark.
+var bark = Bark();
+
+bark.
 register("notify").
 max(3).
 classes({ notification: "alert" }).
@@ -15,7 +17,7 @@ var count = 0;
 function notify() {
 	if(count++ > 10) return;
 
-	Bark.notify("hello world! " + count);
+	bark.notify("hello world! " + count);
 
 	setTimeout(notify, 1000);
 }

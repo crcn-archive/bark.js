@@ -1,4 +1,6 @@
-Bark.
+var bark = Bark();
+
+bark.
 register("popdown").
 max(1).
 classes({ container: "alert-notification-container", notification: "alert" }).
@@ -8,4 +10,4 @@ transitionOut({ }, { top: -50, opacity: 0 }).
 template(templateHtml);
 
 
-Bark.popdown("Hey, some sort of action needs to be taken. Do you want to take it?");
+bark.popdown("Hey, some sort of action needs to be taken. Do you want to take it?");
