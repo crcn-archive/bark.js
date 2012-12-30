@@ -558,7 +558,7 @@ var NotificationBuilder = module.exports = structr({
 	 */
 
 	"notificationClass": function (className) {
-		return this.setClass("container", className);
+		return this.setClass("notification", className);
 	},
 
 	/**
@@ -1759,10 +1759,12 @@ module.exports = require("./base").extend({
 
         if (layout.center) {
             // css.width = css.width || 300;
-           // css["margin-left"] = css["margin-right"] = "auto";
+            //css["margin-left"] = css["margin-right"] = "auto";
             // css["margin"] = "0px auto";
-            css.position = "relative";
+            css.position = "absolute";
+            css.left = "50%";
             css["text-align"] = "center";
+            // css[""]
         }
 
 
@@ -1791,8 +1793,22 @@ module.exports = require("./base").extend({
             self = this,
 
             //note - 
-            $el = $("<div id=\"" + id + "\" class=\"bark-notification\" style=\"display:inline-block;min-width:"+this.options.layout.width+"px\"><div class=\"bark-inner-container\" style=\"position:relative;\"></div></div>");
+            $el = $("<div id=\"" + id + "\" class=\"bark-notification\"><div class=\"bark-inner-container\" style=\"position:relative;\"></div></div><div style=\"clear:both;\"></div>");
+       
         this.$container.append($el);
+
+        var css = {
+            position: "relative",
+            "min-width": this.options.layout.width + "px"
+        };
+
+        if(this.options.layout.center) {
+            css.left = "-50%";
+            css.display = "inline-block";
+        }
+
+        //don't grab the clear div
+        $($el[0]).css(css);
 
         options.$el = $el.find(".bark-inner-container");
 
@@ -1810,6 +1826,8 @@ module.exports = require("./base").extend({
 
         //on close, show next notification
         child.once("close", function () {
+
+            $el.remove();
             self._children.splice(self._children.indexOf(child), 1);
             self.emit("removeChild", child);
             self._addNextNotification();

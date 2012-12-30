@@ -8,13 +8,16 @@ title: Growl Notifications
 <script type="text/javascript">
 
 	function headReady() {
-		Bark.
+
+		var bark = Bark();
+
+		bark.
 		register("alert").
 		defaults({ ok: "OK" }).
 		max(2).
 		modalClass("alert-modal").
 		notificationClass("alert").
-		layout({ width: 300, center: true, top: 200 }).
+		layout({ width: 300,  top: 200, center: true }).
 		transitionIn({ rotateY: -90,  opacity: 0 }, { rotateY: 0, opacity: 1 }, { duration: 800, type: 'in-out' }).
 		transitionOut(null, { rotateY: 90, opacity: 0 }, { duration: 500 }).
 		// transitionIn({  scale: 0.75, opacity: 0 }, {  opacity: 1, scale: 1 }).
@@ -22,13 +25,23 @@ title: Growl Notifications
 		template($("[template-name='alert']").html());
 
 
-		for(var i = 10; i--;)
-		Bark.alert("hello world!" + i, function(event) {
+		for(var i = 100; i >= 1; i/=2)
+		bark.alert(String(zero(i)), function(event) {
 			if(event.ok) {
 				console.log("OK!")
 			}
 		});	
 			
+	}
+
+	function zero(n) {
+		var s = "1";
+		console.log(n)
+		for(var i = Math.round(n); i--;) {
+			s += "0";
+		}
+
+		return s
 	}
 	
 </script>
